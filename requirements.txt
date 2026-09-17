@@ -1,0 +1,11 @@
+Flask>=3.0
+
+# Stage 8 (LLM fallback) — Qwen2.5-Coder-1.5B-Instruct via transformers.
+# Optional at import time: analyzer/llm_fallback.py catches import/load
+# failures and degrades to flagging edges for manual review instead of
+# crashing, so the app still runs graph-extraction-only without these.
+# First run downloads ~3GB of model weights from Hugging Face and needs a
+# few GB of RAM/disk; CPU inference works but is slow, a GPU is recommended.
+transformers>=4.46
+torch>=2.2
+accelerate>=0.34

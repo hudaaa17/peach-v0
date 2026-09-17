@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>peach — repo system map</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍑</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+<style>
+  :root{
+    --bg-void:#14110F;
+    --bg-panel:#1B1712;
+    --bg-panel-2:#211C16;
+    --line:#332C24;
+    --line-soft:#241F19;
+    --text-primary:#F2EAE0;
+    --text-muted:#978A7C;
+    --text-faint:#6B6055;
+    --accent:#FF9462;
+    --accent-dim:#7A4A32;
+    --ok:#8FBF8A;
+    --warn:#E0B15C;
+
+    --c-file:#8FA6C9;
+    --c-func:#8FBF8A;
+    --c-method:#6FA9A0;
+    --c-class:#C9A2E0;
+    --c-module:#6B6055;
+    --c-ext:#E08A5C;
+    --c-cfg:#D9C97A;
+    --c-review:#E05C5C;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--bg-void);
+    color:var(--text-primary);
+    font-family:'Space Grotesk', system-ui, sans-serif;
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace;}
+
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 28px;
+    border-bottom:1px solid var(--line-soft);
+    flex-shrink:0;
+  }
+  .wordmark{
+    font-size:20px; font-weight:700; letter-spacing:-0.02em; color:var(--text-primary);
+    display:flex; align-items:baseline; gap:8px;
+  }
+  .wordmark span{color:var(--accent);}
+  .wordmark small{
+    font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:12px; color:var(--text-faint);
+    letter-spacing:0.02em;
+  }
+  header .meta{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--text-faint);}
+
+  .hero{
+    padding:56px 28px 32px;
+    text-align:center;
+    flex-shrink:0;
+    border-bottom:1px solid var(--line-soft);
+    transition:padding .4s ease;
+  }
+  .hero.compact{padding:22px 28px 20px;}
+  .hero h1{
+    font-size:30px; line-height:1.25; font-weight:600; margin:0 0 22px;
+    max-width:640px; margin-left:auto; margin-right:auto;
+    color:var(--text-primary);
+  }
+  .hero.compact h1{display:none;}
+  .hero p.sub{
+    font-size:13px; color:var(--text-faint); margin:10px 0 0; font-family:'IBM Plex Mono',monospace;
+  }
+  .hero.compact p.sub{display:none;}
+
+  form.repo-form{
+    display:flex; gap:10px; max-width:640px; margin:0 auto;
+  }
+  form.repo-form input[type=text]{
+    flex:1;
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    color:var(--text-primary);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    padding:14px 16px;
+    border-radius:8px;
+    outline:none;
+  }
+  form.repo-form input[type=text]::placeholder{color:var(--text-faint);}
+  form.repo-form input[type=text]:focus{border-color:var(--accent-dim);}
+  form.repo-form button{
+    background:var(--accent);
+    color:#241206;
+    border:none;
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:14px;
+    padding:14px 22px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:filter .15s ease;
+    white-space:nowrap;
+  }
+  form.repo-form button:hover{filter:brightness(1.08);}
+  form.repo-form button:disabled{background:var(--accent-dim); color:#8a6a55; cursor:progress;}
+
+  .stages{
+    display:flex; justify-content:center; flex-wrap:wrap; gap:8px 6px;
+    max-width:760px; margin:20px auto 0;
+  }
+  .stage-chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--text-faint);
+    border:1px solid var(--line);
+    padding:6px 11px;
+    border-radius:99px;
+    display:flex; align-items:center; gap:6px;
+    transition:all .25s ease;
+  }
+  .stage-chip .dot{width:6px; height:6px; border-radius:50%; background:var(--line); transition:background .25s ease;}
+  .stage-chip.active{color:var(--text-primary); border-color:var(--accent-dim); background:rgba(255,148,98,.06);}
+  .stage-chip.active .dot{background:var(--accent); box-shadow:0 0 8px var(--accent);}
+  .stage-chip.done{color:var(--ok); border-color:#2c3a2b;}
+  .stage-chip.done .dot{background:var(--ok);}
+
+  .error-banner{
+    max-width:640px; margin:14px auto 0; padding:12px 16px;
+    background:rgba(224,90,90,.08); border:1px solid #5a2c2c; color:#e8a1a1;
+    border-radius:8px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; display:none;
+  }
+
+  .workspace{
+    flex:1 1 auto; display:flex; min-height:0; overflow:hidden;
+  }
+  .sidebar{
+    width:280px; flex-shrink:0;
+    border-right:1px solid var(--line-soft);
+    padding:20px;
+    overflow-y:auto;
+    background:var(--bg-panel-2);
+  }
+  .sidebar h2{
+    font-size:11px; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--text-faint); font-weight:600; margin:0 0 12px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .legend-row{display:flex; align-items:center; gap:9px; padding:6px 0; font-size:13px; color:var(--text-muted);}
+  .legend-swatch{width:11px; height:11px; border-radius:3px; flex-shrink:0;}
+  .sidebar .divider{height:1px; background:var(--line-soft); margin:18px 0;}
+  .empty-hint{color:var(--text-faint); font-size:12.5px; line-height:1.6; font-family:'IBM Plex Mono',monospace;}
+
+  #detail-panel{font-size:13px; color:var(--text-muted); line-height:1.6;}
+  #detail-panel .d-title{color:var(--text-primary); font-weight:600; font-family:'IBM Plex Mono',monospace; font-size:13px; word-break:break-all; margin-bottom:8px;}
+  #detail-panel .d-row{display:flex; justify-content:space-between; gap:8px; padding:3px 0; font-family:'IBM Plex Mono',monospace; font-size:11.5px;}
+  #detail-panel .d-row span:first-child{color:var(--text-faint);}
+
+  .stat-row{display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--text-faint); padding:3px 0;}
+
+  .export-btn{
+    display:flex; align-items:center; justify-content:center; gap:7px;
+    width:100%;
+    background:transparent;
+    color:var(--text-muted);
+    border:1px solid var(--line);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    padding:9px 10px;
+    border-radius:7px;
+    cursor:pointer;
+    margin-top:10px;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .export-btn:hover{border-color:var(--accent-dim); color:var(--text-primary);}
+  .export-btn:disabled{opacity:.4; cursor:not-allowed;}
+  .export-btn:disabled:hover{border-color:var(--line); color:var(--text-muted);}
+  .stat-row b{color:var(--text-muted); font-weight:500;}
+
+  .graph-area{flex:1; position:relative; min-width:0; min-height:0; height:100%;}
+  #network{width:100%; height:100%;}
+  .graph-placeholder{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    color:var(--text-faint); font-family:'IBM Plex Mono',monospace; font-size:13px; text-align:center;
+    flex-direction:column; gap:8px;
+  }
+  .graph-placeholder .icon{font-size:34px; opacity:.5;}
+
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wordmark">peach<span>.</span><small>repo system mapper</small></div>
+  <div class="meta" id="header-meta">tree-sitter → scip → ast-grep → literal → const-prop → config → joern → slm</div>
+</header>
+
+<div class="hero" id="hero">
+  <h1>Point peach at a public repo, get its structural map back.</h1>
+  <form class="repo-form" id="repo-form">
+    <input type="text" id="repo-url" class="mono" placeholder="github.com/owner/repo" autocomplete="off" spellcheck="false">
+    <button type="submit" id="submit-btn">Map it</button>
+  </form>
+  <p class="sub">Clones a shallow copy, parses it, then throws it away. No data is stored.</p>
+
+  <div class="stages" id="stages"></div>
+  <div class="error-banner" id="error-banner"></div>
+</div>
+
+<div class="workspace">
+  <div class="sidebar">
+    <h2>Legend</h2>
+    <div class="legend-row"><span class="legend-swatch" style="background:var(--c-file)"></span>File</div>
+    <div class="legend-row"><span class="legend-swatch" style="background:var(--c-func)"></span>Function</div>
+    <div class="legend-row"><span class="legend-swatch" style="background:var(--c-method)"></span>Method</div>
+    <div class="legend-row"><span class="legend-swatch" style="background:var(--c-class)"></span>Class</div>
+    <div class="legend-row"><span class="legend-swatch" style="background:var(--c-module)"></span>Module scope</div>
+    <div class="legend-row"><span class="legend-swatch" style="background:var(--c-ext)"></span>External service</div>
+    <div class="legend-row"><span class="legend-swatch" style="background:var(--c-cfg)"></span>Config / manifest</div>
+    <div class="legend-row"><span class="legend-swatch" style="background:var(--c-review); border-radius:50%;"></span>Needs review (Joern/SLM guess)</div>
+
+    <div class="divider"></div>
+    <h2>Run stats</h2>
+    <div id="stats"><div class="empty-hint">Run an analysis to see stats.</div></div>
+    <button type="button" class="export-btn" id="export-btn" disabled>⭳ Export graph (JSON)</button>
+
+    <div class="divider"></div>
+    <h2>Selected node</h2>
+    <div id="detail-panel"><div class="empty-hint">Click a node in the graph to inspect it.</div></div>
+  </div>
+
+  <div class="graph-area">
+    <div class="graph-placeholder" id="placeholder">
+      <div class="icon">🍑</div>
+      <div>the system map will render here</div>
+    </div>
+    <div id="network" style="display:none;"></div>
+  </div>
+</div>
+
+<script>
+const STAGES = [
+  "Connect repo",
+  "Tree-sitter parse",
+  "SCIP symbol resolution",
+  "ast-grep pattern match",
+  "Literal check",
+  "Constant-prop check",
+  "Config check",
+  "Escalate to Joern",
+  "SLM fallback (Qwen2.5-Coder)",
+];
+
+const stagesEl = document.getElementById('stages');
+STAGES.forEach((s, i) => {
+  const chip = document.createElement('div');
+  chip.className = 'stage-chip';
+  chip.id = 'stage-' + i;
+  chip.innerHTML = `<span class="dot"></span>${s}`;
+  stagesEl.appendChild(chip);
+});
+
+function setStage(i, state) {
+  // state: 'active' marks i active and everything before it 'done'
+  for (let j = 0; j < STAGES.length; j++) {
+    const chip = document.getElementById('stage-' + j);
+    chip.classList.remove('active', 'done');
+    if (j < i) chip.classList.add('done');
+    else if (j === i && state === 'active') chip.classList.add('active');
+    else if (j === i && state === 'done') chip.classList.add('done');
+  }
+}
+function allDone() {
+  STAGES.forEach((_, j) => {
+    document.getElementById('stage-' + j).classList.remove('active');
+    document.getElementById('stage-' + j).classList.add('done');
+  });
+}
+function resetStages() {
+  STAGES.forEach((_, j) => {
+    const chip = document.getElementById('stage-' + j);
+    chip.classList.remove('active', 'done');
+  });
+}
+
+const form = document.getElementById('repo-form');
+const input = document.getElementById('repo-url');
+const btn = document.getElementById('submit-btn');
+const errorBanner = document.getElementById('error-banner');
+const hero = document.getElementById('hero');
+const placeholder = document.getElementById('placeholder');
+const networkDiv = document.getElementById('network');
+const statsDiv = document.getElementById('stats');
+const detailDiv = document.getElementById('detail-panel');
+const exportBtn = document.getElementById('export-btn');
+
+let network = null;
+let simTimer = null;
+let currentGraph = null;   // the full {nodes, edges, meta} last rendered, for export
+let currentRepoUrl = '';
+
+const TYPE_COLOR = {
+  file: getVar('--c-file'), function: getVar('--c-func'), method: getVar('--c-method'),
+  class: getVar('--c-class'), module_scope: getVar('--c-module'),
+  external_service: getVar('--c-ext'), config: getVar('--c-cfg'),
+};
+function getVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+const TYPE_SHAPE = {
+  file: 'box', function: 'dot', method: 'dot', class: 'diamond',
+  module_scope: 'dot', external_service: 'triangle', config: 'square',
+};
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const url = input.value.trim();
+  if (!url) return;
+  currentRepoUrl = url;
+
+  errorBanner.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Mapping…';
+  hero.classList.add('compact');
+  resetStages();
+  setStage(0, 'active');
+
+  // client-side stage animation while the backend does its thing —
+  // it's a synchronous request, so this is a best-effort visual pace
+  // that we snap to "done" the moment the real response lands.
+  let simIdx = 0;
+  simTimer = setInterval(() => {
+    simIdx = Math.min(simIdx + 1, STAGES.length - 1);
+    setStage(simIdx, 'active');
+  }, 700);
+
+  try {
+    const res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ repo_url: url }),
+    });
+    const data = await res.json();
+    clearInterval(simTimer);
+
+    if (!res.ok) {
+      allDone();
+      errorBanner.textContent = data.error || 'Something went wrong.';
+      errorBanner.style.display = 'block';
+      return;
+    }
+    allDone();
+    renderGraph(data);
+  } catch (err) {
+    clearInterval(simTimer);
+    allDone();
+    errorBanner.textContent = 'Network error talking to the analyzer: ' + err.message;
+    errorBanner.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Map it';
+  }
+});
+
+function renderGraph(data) {
+  placeholder.style.display = 'none';
+  networkDiv.style.display = 'block';
+
+  currentGraph = data;
+  exportBtn.disabled = false;
+
+  const nodes = new vis.DataSet(data.nodes.map(n => ({
+    id: n.id,
+    label: n.label,
+    shape: TYPE_SHAPE[n.type] || 'dot',
+    color: {
+      background: TYPE_COLOR[n.type] || '#888',
+      border: 'rgba(0,0,0,.35)',
+      highlight: { background: TYPE_COLOR[n.type] || '#888', border: '#fff' },
+    },
+    font: { color: '#F2EAE0', size: 12, face: 'IBM Plex Mono' },
+    size: n.type === 'file' ? 16 : (n.type === 'external_service' ? 15 : 10),
+    borderWidth: 1,
+    raw: n,
+  })));
+
+  const edgeColor = {
+    contains: 'rgba(151,138,124,0.25)',
+    imports: 'rgba(143,166,201,0.45)',
+    calls: 'rgba(143,191,138,0.55)',
+    calls_external: 'rgba(224,138,92,0.75)',
+    configured_in: 'rgba(217,201,122,0.75)',
+  };
+  const REVIEW_COLOR = getVar('--c-review');
+  const edges = new vis.DataSet(data.edges.map((e, i) => ({
+    id: i,
+    from: e.from,
+    to: e.to,
+    color: { color: e.needs_review ? REVIEW_COLOR : (edgeColor[e.kind] || 'rgba(255,255,255,0.15)') },
+    dashes: e.needs_review ? [4, 3] : (e.kind === 'configured_in' || e.kind === 'imports'),
+    arrows: e.kind === 'contains' ? '' : 'to',
+    width: e.kind === 'calls_external' ? 1.6 : 1,
+    smooth: { type: 'continuous' },
+    raw: e,
+  })));
+
+  if (network) network.destroy();
+  network = new vis.Network(networkDiv, { nodes, edges }, {
+  physics: {
+    solver: 'forceAtlas2Based',
+    forceAtlas2Based: { gravitationalConstant: -60, springLength: 90, springConstant: 0.06, avoidOverlap: 0.4 },
+    stabilization: { iterations: 150 },
+  },
+  interaction: { hover: true, tooltipDelay: 120 },
+  layout: { improvedLayout: data.nodes.length < 800 },
+});
+
+network.on('stabilizationIterationsDone', function () {
+  network.setOptions({ physics: false });
+});
+
+  network.on('click', (params) => {
+    if (params.nodes.length) {
+      const n = nodes.get(params.nodes[0]);
+      showDetail(n.raw, data);
+    }
+  });
+
+  renderStats(data);
+}
+
+function renderStats(data) {
+  const counts = {};
+  data.nodes.forEach(n => counts[n.type] = (counts[n.type] || 0) + 1);
+  const kindCounts = {};
+  data.edges.forEach(e => kindCounts[e.kind] = (kindCounts[e.kind] || 0) + 1);
+
+  let html = '';
+  html += row('Repo', data.meta.repo);
+  html += row('Files parsed', data.meta.files_parsed);
+  html += row('Config files seen', data.meta.config_files);
+  html += row('Analysis time', data.meta.elapsed_seconds + 's');
+  html += `<div style="height:8px"></div>`;
+  html += row('Functions/methods', (counts.function || 0) + (counts.method || 0));
+  html += row('Classes', counts.class || 0);
+  html += row('External calls found', kindCounts.calls_external || 0);
+  html += row('→ resolved to config', data.edges.filter(e => e.kind === 'configured_in').length);
+  html += `<div style="height:8px"></div>`;
+  html += row('Escalated to Joern', data.meta.joern_escalated ?? 0);
+  html += row('→ resolved by Joern', data.meta.joern_resolved ?? 0);
+  html += row('Sent to SLM fallback', data.meta.llm_fallback_used ?? 0);
+  html += row('→ resolved by SLM', data.meta.llm_resolved ?? 0);
+  html += row('⚠ needs review', data.meta.needs_review ?? 0);
+  statsDiv.innerHTML = html;
+
+  function row(label, val) {
+    return `<div class="stat-row"><span>${label}</span><b>${val}</b></div>`;
+  }
+}
+
+function slugFromRepoUrl(url) {
+  const cleaned = (url || 'graph').replace(/\.git$/i, '').replace(/\/+$/, '');
+  const tail = cleaned.split('/').slice(-2).join('-') || cleaned;
+  return tail.replace(/[^\w.-]+/g, '_').replace(/^_+|_+$/g, '') || 'graph';
+}
+
+function exportGraphJSON() {
+  if (!currentGraph) return;
+
+  // Export exactly what was rendered: every node and edge, plus the run
+  // meta (stage stats, escalation counts) so the file is self-describing
+  // without needing the dashboard open alongside it.
+  const payload = {
+    nodes: currentGraph.nodes,
+    edges: currentGraph.edges,
+    meta: currentGraph.meta,
+    exported_at: new Date().toISOString(),
+  };
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const objectUrl = URL.createObjectURL(blob);
+  const ts = new Date().toISOString().replace(/[:.]/g, '-');
+
+  const a = document.createElement('a');
+  a.href = objectUrl;
+  a.download = `peach-graph_${slugFromRepoUrl(currentRepoUrl)}_${ts}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(objectUrl);
+}
+
+exportBtn.addEventListener('click', exportGraphJSON);
+
+function showDetail(n, data) {
+  let html = `<div class="d-title">${escapeHtml(n.label)}</div>`;
+  html += drow('type', n.type);
+  if (n.file) html += drow('file', n.file);
+  if (n.path) html += drow('path', n.path);
+  if (n.line) html += drow('line', n.line);
+  if (n.pattern) html += drow('client pattern', n.pattern);
+
+  const incoming = data.edges.filter(e => e.to === n.id);
+  const outgoing = data.edges.filter(e => e.from === n.id);
+  html += `<div style="height:10px"></div><div class="d-title" style="font-size:11px;">connections</div>`;
+  html += drow('incoming', incoming.length);
+  html += drow('outgoing', outgoing.length);
+
+  const extOut = outgoing.filter(e => e.kind === 'calls_external');
+  if (extOut.length) {
+    html += `<div style="height:8px"></div>`;
+    extOut.forEach(e => {
+      const flag = e.needs_review ? ' ⚠' : '';
+      html += `<div class="d-row"><span>${e.method || 'candidate'}${flag}</span><span>${e.to.replace('ext:','')}</span></div>`;
+      if (e.needs_review && e.review_reason) {
+        html += `<div class="empty-hint" style="margin:2px 0 6px; color:var(--c-review);">${escapeHtml(e.review_reason)}</div>`;
+      }
+    });
+  }
+  detailDiv.innerHTML = html;
+
+  function drow(k, v) {
+    return `<div class="d-row"><span>${k}</span><span>${escapeHtml(String(v))}</span></div>`;
+  }
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+</script>
+</body>
+</html>
