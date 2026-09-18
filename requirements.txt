@@ -9,3 +9,4 @@ Flask>=3.0
 transformers>=4.46
 torch>=2.2
 accelerate>=0.34
+tree-sitter-language-pack

@@ -399,7 +399,7 @@ def _get_ts_parser(grammar_name: str):
     if _ts_available is False:
         return None
     try:
-        from tree_sitter_languages import get_parser
+        from tree_sitter_language_pack import get_parser
     except ImportError as exc:
         _ts_available = False
         _ts_load_errors["_module"] = (
