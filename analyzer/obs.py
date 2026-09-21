@@ -77,15 +77,28 @@ class _JsonFormatter(logging.Formatter):
 
 
 #: Fields whose whole point is the detail they carry. Truncating these to
-#: 120 chars decapitated exactly the part worth reading — a four-element
-#: `traces` list would render as `[{'trace': 'env_var', ...}, {'trace': '…`,
-#: showing the first trace's reason and hiding the other three. They get
+#: _INLINE_LIMIT chars decapitated exactly the part worth reading — a
+#: four-element `traces` list would render as `[{'trace': 'env_var', ...}, {'trace': '…`,
+#: showing the first entry's reason and hiding the other three. They get
 #: one line each instead.
+#:
+#: This list is per-field-name, not per-stage, so it has to be kept in
+#: sync by hand whenever a stage starts emitting a new multi-element
+#: field — nothing enforces that automatically, and a field left off
+#: this list degrades silently back to inline truncation rather than
+#: raising anywhere. `conditions` (stage 7: the branch conditions
+#: guarding a resolved call) and `by_kind`/`by_grounding`/`by_source`
+#: (stages 6, 7, 8: per-kind match/answer breakdowns) were added for
+#: exactly that reason — they carry real source text and were
+#: truncating mid-list before this fix, which is the specific failure
+#: this mechanism exists to prevent.
 _INLINE_LIMIT = 110
 
 _BLOCK_FIELDS = ("traces", "summary", "message", "bail_reasons", "arg_shapes", "traces_ran",
                  "traces_resolved", "by_pattern", "examples",
-                 "top_unresolved_roots", "identifiers")
+                 "top_unresolved_roots", "identifiers",
+                 "conditions", "by_kind", "by_grounding", "by_source", "outcome",
+                 "flows", "steps")
 
 
 class _TextFormatter(logging.Formatter):
@@ -133,8 +146,13 @@ def _render_block(value):
     lines = []
     for item in value:
         if isinstance(item, dict) and "trace" in item:
-            # The per-trace result shape from joern_check: lead with the
-            # verdict, since that's what's being scanned for.
+            # Legacy per-trace result shape (name/ran/resolved/reason/detail).
+            # No current stage emits this — joern_check's stage 7 rewrite
+            # replaced the regex "traces" it described with real CPG flow
+            # results — but a still-installed integration or an older
+            # cached log record could still carry it, so the readable
+            # rendering stays rather than silently reverting those to
+            # `str(item)`.
             verdict = ("RESOLVED" if item.get("resolved")
                        else "ran, no match" if item.get("ran")
                        else "skipped")

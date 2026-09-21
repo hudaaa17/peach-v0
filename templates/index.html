@@ -186,6 +186,68 @@
   .export-btn:disabled:hover{border-color:var(--line); color:var(--text-muted);}
   .stat-row b{color:var(--text-muted); font-weight:500;}
 
+  .export-btn.secondary{border-style:dashed;}
+  .export-btn.accent{border-color:var(--accent-dim); color:var(--accent);}
+  .export-btn.accent:hover{border-color:var(--accent); color:var(--accent);}
+  .btn-row{display:flex; gap:8px;}
+  .btn-row .export-btn{margin-top:0;}
+
+  .toggle-row{
+    display:flex; align-items:center; gap:9px; padding:6px 0;
+    font-size:12.5px; color:var(--text-muted); cursor:pointer; user-select:none;
+  }
+  .toggle-row input[type=checkbox]{
+    appearance:none; -webkit-appearance:none; width:15px; height:15px; flex-shrink:0;
+    border:1px solid var(--line); border-radius:4px; background:var(--bg-panel);
+    cursor:pointer; position:relative; transition:border-color .15s ease, background .15s ease;
+  }
+  .toggle-row input[type=checkbox]:checked{background:var(--accent); border-color:var(--accent);}
+  .toggle-row input[type=checkbox]:checked::after{
+    content:''; position:absolute; left:4px; top:1px; width:4px; height:8px;
+    border:solid #241206; border-width:0 2px 2px 0; transform:rotate(45deg);
+  }
+  .toggle-row .hint{color:var(--text-faint); font-size:11px; margin-left:auto; font-family:'IBM Plex Mono',monospace;}
+
+  .view-hint{color:var(--text-faint); font-size:11px; line-height:1.6; font-family:'IBM Plex Mono',monospace; margin:8px 0 2px;}
+
+  .hop-row{display:flex; align-items:center; justify-content:space-between; gap:8px; margin:10px 0;}
+  .hop-row label{font-size:12px; color:var(--text-muted);}
+  .stepper{display:flex; align-items:center; gap:0; border:1px solid var(--line); border-radius:6px; overflow:hidden;}
+  .stepper button{
+    background:var(--bg-panel); border:none; color:var(--text-muted); width:22px; height:22px;
+    font-family:'IBM Plex Mono',monospace; font-size:13px; cursor:pointer; line-height:1;
+  }
+  .stepper button:hover{background:var(--bg-panel-2); color:var(--text-primary);}
+  .stepper span{
+    width:22px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:12px;
+    color:var(--text-primary); border-left:1px solid var(--line); border-right:1px solid var(--line);
+    line-height:22px;
+  }
+
+  .selection-badge{
+    display:flex; align-items:center; justify-content:space-between;
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--text-faint);
+    padding:7px 9px; background:var(--bg-panel); border:1px solid var(--line-soft);
+    border-radius:6px; margin:8px 0 10px;
+  }
+  .selection-badge b{color:var(--text-primary); font-weight:600;}
+
+  .isolate-banner{
+    display:none; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px; color:var(--accent); background:rgba(255,148,98,.08);
+    border:1px solid var(--accent-dim); border-radius:6px; padding:7px 9px; margin-bottom:10px;
+  }
+  .isolate-banner.active{display:flex;}
+
+  .drill-btn{
+    display:inline-flex; align-items:center; gap:5px; margin-top:8px;
+    background:transparent; border:1px solid var(--line); color:var(--text-muted);
+    font-family:'IBM Plex Mono',monospace; font-size:11px; padding:5px 9px;
+    border-radius:6px; cursor:pointer; transition:border-color .15s ease, color .15s ease;
+  }
+  .drill-btn:hover{border-color:var(--accent-dim); color:var(--text-primary);}
+  .drill-btn + .drill-btn{margin-left:6px;}
+
   .graph-area{flex:1; position:relative; min-width:0; min-height:0; height:100%;}
   #network{width:100%; height:100%;}
   .graph-placeholder{
@@ -233,7 +295,38 @@
     <div class="divider"></div>
     <h2>Run stats</h2>
     <div id="stats"><div class="empty-hint">Run an analysis to see stats.</div></div>
-    <button type="button" class="export-btn" id="export-btn" disabled>⭳ Export graph (JSON)</button>
+    <button type="button" class="export-btn" id="export-btn" disabled>⭳ Export full graph (JSON)</button>
+
+    <div class="divider"></div>
+    <h2>View</h2>
+    <label class="toggle-row">
+      <input type="checkbox" id="rollup-files-toggle">
+      Rollup by file
+    </label>
+    <label class="toggle-row">
+      <input type="checkbox" id="rollup-services-toggle">
+      Rollup by service pattern
+    </label>
+    <div class="view-hint">Collapses calls up to the file / client-library level. Double-click a rolled-up node to drill in, or use the buttons on its detail panel.</div>
+
+    <div class="divider"></div>
+    <h2>Isolate</h2>
+    <div class="view-hint">Ctrl/Cmd-click nodes in the graph to multi-select, then isolate just that neighborhood.</div>
+    <div class="selection-badge"><span>Selected in graph</span><b id="selection-count">0</b></div>
+    <div class="hop-row">
+      <label>+ neighbor hops</label>
+      <div class="stepper">
+        <button type="button" id="hop-minus">−</button>
+        <span id="hop-value">1</span>
+        <button type="button" id="hop-plus">+</button>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="export-btn" id="isolate-btn" disabled>Isolate</button>
+      <button type="button" class="export-btn" id="exit-isolate-btn" disabled>Exit</button>
+    </div>
+    <div class="isolate-banner" id="isolate-banner"><span>◉</span><span id="isolate-banner-text">Isolated view active</span></div>
+    <button type="button" class="export-btn accent" id="export-isolated-btn" disabled>⭳ Export isolated graph (JSON)</button>
 
     <div class="divider"></div>
     <h2>Selected node</h2>
@@ -304,6 +397,141 @@ const networkDiv = document.getElementById('network');
 const statsDiv = document.getElementById('stats');
 const detailDiv = document.getElementById('detail-panel');
 const exportBtn = document.getElementById('export-btn');
+const rollupFilesToggle = document.getElementById('rollup-files-toggle');
+const rollupServicesToggle = document.getElementById('rollup-services-toggle');
+const isolateBtn = document.getElementById('isolate-btn');
+const exitIsolateBtn = document.getElementById('exit-isolate-btn');
+const exportIsolatedBtn = document.getElementById('export-isolated-btn');
+const isolateBanner = document.getElementById('isolate-banner');
+const isolateBannerText = document.getElementById('isolate-banner-text');
+const selectionCountEl = document.getElementById('selection-count');
+const hopValueEl = document.getElementById('hop-value');
+const hopMinusBtn = document.getElementById('hop-minus');
+const hopPlusBtn = document.getElementById('hop-plus');
+
+// ---- pure data-transform layer -------------------------------------------
+// Node/edge shaping for rollup + isolate. Verified independently against a
+// synthetic graph fixture (aggregation counts, dropped self-loops from
+// rollup-induced containment edges, per-file/per-pattern drill-down
+// isolation, and — the one real bug that testing caught — hop-expansion
+// that must check membership against a frozen frontier snapshot rather
+// than the accumulator being built, or it silently over-expands depending
+// on edge array order) before being wired into the UI below.
+
+function computeView(graph, viewState) {
+  const nodesById = new Map(graph.nodes.map(n => [n.id, n]));
+  const idToViewId = new Map();
+
+  // 1. Decide each real node's view id.
+  for (const n of graph.nodes) {
+    let viewId = n.id;
+    if (viewState.rollupFiles &&
+        (n.type === 'function' || n.type === 'method' || n.type === 'class' || n.type === 'module_scope') &&
+        n.file && !viewState.expandedFiles.has(n.file)) {
+      viewId = 'file:' + n.file;
+    } else if (viewState.rollupServices &&
+               n.type === 'external_service' &&
+               !viewState.expandedServicePatterns.has(n.pattern || 'unknown')) {
+      viewId = 'svc:' + (n.pattern || 'unknown');
+    }
+    idToViewId.set(n.id, viewId);
+  }
+
+  // 2. Build view nodes, merging members into their group's view id.
+  const viewNodes = new Map(); // viewId -> node
+  for (const n of graph.nodes) {
+    const viewId = idToViewId.get(n.id);
+    if (viewId === n.id) {
+      if (!viewNodes.has(viewId)) {
+        viewNodes.set(viewId, { ...n, _members: [n.id], _rolled_up: false });
+      }
+      continue;
+    }
+    let group = viewNodes.get(viewId);
+    if (!group) {
+      if (nodesById.has(viewId)) {
+        // File-rollup case: the group IS a real node (the file itself),
+        // which may not have been visited yet in iteration order.
+        const seed = nodesById.get(viewId);
+        group = { ...seed, _members: [seed.id], _rolled_up: false };
+      } else {
+        // Service-rollup case: synthetic group node, no real backing id.
+        group = {
+          id: viewId, label: n.pattern || 'unknown', type: 'external_service',
+          group: 'external_service', pattern: n.pattern || null,
+          _members: [], _rolled_up: false, _synthetic: true,
+        };
+      }
+      viewNodes.set(viewId, group);
+    }
+    if (!group._members.includes(n.id)) group._members.push(n.id);
+  }
+  // Finalize labels/flags for anything that actually absorbed >1 real node.
+  for (const g of viewNodes.values()) {
+    const hiddenCount = g._members.length - (g._synthetic ? 0 : 1);
+    if (hiddenCount > 0) {
+      g._rolled_up = true;
+      const base = g._baseLabel || g.label;
+      g._baseLabel = base;
+      g.label = g._synthetic ? `${base} (${g._members.length})` : `${base} (${hiddenCount})`;
+    }
+  }
+
+  // 3. Redirect + aggregate edges onto view ids.
+  const viewEdges = new Map(); // key -> edge
+  for (const e of graph.edges) {
+    const from = idToViewId.get(e.from);
+    const to = idToViewId.get(e.to);
+    if (from === undefined || to === undefined) continue; // dangling ref, skip
+    if (from === to) continue; // rollup-induced self loop, meaningless
+
+    const key = `${from}|${to}|${e.kind}`;
+    let agg = viewEdges.get(key);
+    if (!agg) {
+      agg = { ...e, from, to, _count: 1, _members: [e] };
+      viewEdges.set(key, agg);
+    } else {
+      agg._count += 1;
+      agg._members.push(e);
+      if (e.needs_review) agg.needs_review = true;
+      if (e.review_reason && agg.review_reason !== e.review_reason) {
+        const seen = new Set((agg._review_reasons || [agg.review_reason]).filter(Boolean));
+        seen.add(e.review_reason);
+        agg._review_reasons = [...seen];
+      }
+    }
+  }
+
+  return { nodes: [...viewNodes.values()], edges: [...viewEdges.values()] };
+}
+
+// Expand `seedIds` by `hops` hops over `viewEdges`. Each round only looks
+// at the *previous* round's frontier — never the accumulator being built —
+// so a node discovered partway through a pass can't leak into that same
+// pass's hop count depending on edge array order.
+function expandHops(viewEdges, seedIds, hops) {
+  let frontier = new Set(seedIds);
+  const out = new Set(seedIds);
+  for (let h = 0; h < hops; h++) {
+    const next = new Set();
+    for (const e of viewEdges) {
+      if (frontier.has(e.from) && !out.has(e.to)) next.add(e.to);
+      if (frontier.has(e.to) && !out.has(e.from)) next.add(e.from);
+    }
+    if (next.size === 0) break;
+    for (const id of next) out.add(id);
+    frontier = next;
+  }
+  return out;
+}
+
+function isolateView(view, keepIds) {
+  const nodes = view.nodes.filter(n => keepIds.has(n.id));
+  const edges = view.edges.filter(e => keepIds.has(e.from) && keepIds.has(e.to));
+  return { nodes, edges };
+}
+
+
 
 let network = null;
 let simTimer = null;
@@ -321,6 +549,180 @@ const TYPE_SHAPE = {
   file: 'box', function: 'dot', method: 'dot', class: 'diamond',
   module_scope: 'dot', external_service: 'triangle', config: 'square',
 };
+
+// ---- rollup / drill-down / isolate state ----------------------------------
+// currentGraph (set in renderGraph) is always the untouched server response
+// and is what "Export full graph" reads from, regardless of view state.
+// currentView is whatever computeView()/isolateView() last produced and is
+// what's actually on screen — it's what "Export isolated graph" reads from.
+const viewState = {
+  rollupFiles: false,
+  rollupServices: false,
+  expandedFiles: new Set(),           // file paths drilled into despite rollupFiles
+  expandedServicePatterns: new Set(), // patterns drilled into despite rollupServices
+  isolate: null,                      // null | Set of currently-isolated view-node ids
+};
+let currentView = null;
+let hopDepth = 1;
+
+function freshViewState() {
+  viewState.rollupFiles = false;
+  viewState.rollupServices = false;
+  viewState.expandedFiles = new Set();
+  viewState.expandedServicePatterns = new Set();
+  viewState.isolate = null;
+  rollupFilesToggle.checked = false;
+  rollupServicesToggle.checked = false;
+}
+
+function rebuildNetwork() {
+  if (!currentGraph) return;
+  let view = computeView(currentGraph, viewState);
+  if (viewState.isolate) {
+    view = isolateView(view, viewState.isolate);
+  }
+  currentView = view;
+
+  const nodes = new vis.DataSet(view.nodes.map(n => ({
+    id: n.id,
+    label: n.label,
+    shape: TYPE_SHAPE[n.type] || 'dot',
+    color: {
+      background: TYPE_COLOR[n.type] || '#888',
+      border: n._rolled_up ? 'rgba(255,148,98,.6)' : 'rgba(0,0,0,.35)',
+      highlight: { background: TYPE_COLOR[n.type] || '#888', border: '#fff' },
+    },
+    font: { color: '#F2EAE0', size: 12, face: 'IBM Plex Mono' },
+    size: n.type === 'file' ? (n._rolled_up ? 20 : 16) : (n.type === 'external_service' ? (n._rolled_up ? 19 : 15) : 10),
+    borderWidth: n._rolled_up ? 2.5 : 1,
+    shapeProperties: { borderDashes: n._rolled_up ? [3, 2] : false },
+    raw: n,
+  })));
+
+  const edgeColor = {
+    contains: 'rgba(151,138,124,0.25)',
+    imports: 'rgba(143,166,201,0.45)',
+    calls: 'rgba(143,191,138,0.55)',
+    calls_external: 'rgba(224,138,92,0.75)',
+    configured_in: 'rgba(217,201,122,0.75)',
+  };
+  const REVIEW_COLOR = getVar('--c-review');
+  const edges = new vis.DataSet(view.edges.map((e, i) => ({
+    id: i,
+    from: e.from,
+    to: e.to,
+    label: e._count > 1 ? `×${e._count}` : undefined,
+    font: e._count > 1 ? { color: getVar('--text-faint'), size: 10, face: 'IBM Plex Mono', strokeWidth: 0 } : undefined,
+    color: { color: e.needs_review ? REVIEW_COLOR : (edgeColor[e.kind] || 'rgba(255,255,255,0.15)') },
+    dashes: e.needs_review ? [4, 3] : (e.kind === 'configured_in' || e.kind === 'imports'),
+    arrows: e.kind === 'contains' ? '' : 'to',
+    width: e.kind === 'calls_external' ? 1.6 : 1,
+    smooth: { type: 'continuous' },
+    raw: e,
+  })));
+
+  if (network) network.destroy();
+  network = new vis.Network(networkDiv, { nodes, edges }, {
+    physics: {
+      solver: 'forceAtlas2Based',
+      forceAtlas2Based: { gravitationalConstant: -60, springLength: 90, springConstant: 0.06, avoidOverlap: 0.4 },
+      stabilization: { iterations: 150 },
+    },
+    interaction: { hover: true, tooltipDelay: 120, multiselect: true },
+    layout: { improvedLayout: view.nodes.length < 800 },
+  });
+
+  network.on('stabilizationIterationsDone', function () {
+    network.setOptions({ physics: false });
+  });
+
+  network.on('click', (params) => {
+    if (params.nodes.length) {
+      const n = nodes.get(params.nodes[0]);
+      showDetail(n.raw, currentView);
+    }
+    updateSelectionUI();
+  });
+
+  network.on('doubleClick', (params) => {
+    if (!params.nodes.length) return;
+    const n = nodes.get(params.nodes[0]).raw;
+    if (n._rolled_up) toggleDrill(n, true);
+  });
+
+  network.on('deselectNode', updateSelectionUI);
+
+  updateSelectionUI();
+  refreshIsolateControls();
+  renderStats(currentGraph, currentView);
+}
+
+// Drill a single rolled-up node open (expand=true) or fold an individually
+// expanded one back into its group (expand=false).
+function toggleDrill(n, expand) {
+  if (n._synthetic) {
+    // Service-pattern group: drilling in reveals every real service with
+    // that pattern; folding removes the pattern from the expanded set.
+    const key = n.pattern || 'unknown';
+    if (expand) viewState.expandedServicePatterns.add(key);
+    else viewState.expandedServicePatterns.delete(key);
+  } else if (n.type === 'file') {
+    // File nodes always carry `path` from the backend (_build_graph sets
+    // it on every file node), so this is always present, not a fallback.
+    if (expand) viewState.expandedFiles.add(n.path);
+    else viewState.expandedFiles.delete(n.path);
+  }
+  viewState.isolate = null; // an expand/collapse changes which ids exist; drop any stale isolation
+  rebuildNetwork();
+}
+
+function updateSelectionUI() {
+  const sel = network ? network.getSelectedNodes() : [];
+  selectionCountEl.textContent = sel.length;
+  isolateBtn.disabled = sel.length === 0;
+}
+
+function setHopDepth(v) {
+  hopDepth = Math.max(0, Math.min(5, v));
+  hopValueEl.textContent = hopDepth;
+}
+hopMinusBtn.addEventListener('click', () => setHopDepth(hopDepth - 1));
+hopPlusBtn.addEventListener('click', () => setHopDepth(hopDepth + 1));
+
+rollupFilesToggle.addEventListener('change', () => {
+  viewState.rollupFiles = rollupFilesToggle.checked;
+  viewState.isolate = null; // node-id set changes under rollup; stale isolation would reference ids that no longer exist
+  rebuildNetwork();
+});
+rollupServicesToggle.addEventListener('change', () => {
+  viewState.rollupServices = rollupServicesToggle.checked;
+  viewState.isolate = null;
+  rebuildNetwork();
+});
+
+isolateBtn.addEventListener('click', () => {
+  if (!network || !currentView) return;
+  const selected = network.getSelectedNodes();
+  if (!selected.length) return;
+  const seed = new Set(selected);
+  viewState.isolate = hopDepth > 0 ? expandHops(currentView.edges, seed, hopDepth) : seed;
+  rebuildNetwork();
+});
+exitIsolateBtn.addEventListener('click', () => {
+  viewState.isolate = null;
+  rebuildNetwork();
+});
+
+function refreshIsolateControls() {
+  const active = !!viewState.isolate;
+  exitIsolateBtn.disabled = !active;
+  exportIsolatedBtn.disabled = !active;
+  isolateBanner.classList.toggle('active', active);
+  if (active && currentView) {
+    isolateBannerText.textContent =
+      `Isolated: ${currentView.nodes.length} node(s), ${currentView.edges.length} edge(s)`;
+  }
+}
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -378,89 +780,36 @@ function renderGraph(data) {
 
   currentGraph = data;
   exportBtn.disabled = false;
-
-  const nodes = new vis.DataSet(data.nodes.map(n => ({
-    id: n.id,
-    label: n.label,
-    shape: TYPE_SHAPE[n.type] || 'dot',
-    color: {
-      background: TYPE_COLOR[n.type] || '#888',
-      border: 'rgba(0,0,0,.35)',
-      highlight: { background: TYPE_COLOR[n.type] || '#888', border: '#fff' },
-    },
-    font: { color: '#F2EAE0', size: 12, face: 'IBM Plex Mono' },
-    size: n.type === 'file' ? 16 : (n.type === 'external_service' ? 15 : 10),
-    borderWidth: 1,
-    raw: n,
-  })));
-
-  const edgeColor = {
-    contains: 'rgba(151,138,124,0.25)',
-    imports: 'rgba(143,166,201,0.45)',
-    calls: 'rgba(143,191,138,0.55)',
-    calls_external: 'rgba(224,138,92,0.75)',
-    configured_in: 'rgba(217,201,122,0.75)',
-  };
-  const REVIEW_COLOR = getVar('--c-review');
-  const edges = new vis.DataSet(data.edges.map((e, i) => ({
-    id: i,
-    from: e.from,
-    to: e.to,
-    color: { color: e.needs_review ? REVIEW_COLOR : (edgeColor[e.kind] || 'rgba(255,255,255,0.15)') },
-    dashes: e.needs_review ? [4, 3] : (e.kind === 'configured_in' || e.kind === 'imports'),
-    arrows: e.kind === 'contains' ? '' : 'to',
-    width: e.kind === 'calls_external' ? 1.6 : 1,
-    smooth: { type: 'continuous' },
-    raw: e,
-  })));
-
-  if (network) network.destroy();
-  network = new vis.Network(networkDiv, { nodes, edges }, {
-  physics: {
-    solver: 'forceAtlas2Based',
-    forceAtlas2Based: { gravitationalConstant: -60, springLength: 90, springConstant: 0.06, avoidOverlap: 0.4 },
-    stabilization: { iterations: 150 },
-  },
-  interaction: { hover: true, tooltipDelay: 120 },
-  layout: { improvedLayout: data.nodes.length < 800 },
-});
-
-network.on('stabilizationIterationsDone', function () {
-  network.setOptions({ physics: false });
-});
-
-  network.on('click', (params) => {
-    if (params.nodes.length) {
-      const n = nodes.get(params.nodes[0]);
-      showDetail(n.raw, data);
-    }
-  });
-
-  renderStats(data);
+  freshViewState();
+  rebuildNetwork();
 }
 
-function renderStats(data) {
+function renderStats(graph, view) {
   const counts = {};
-  data.nodes.forEach(n => counts[n.type] = (counts[n.type] || 0) + 1);
+  graph.nodes.forEach(n => counts[n.type] = (counts[n.type] || 0) + 1);
   const kindCounts = {};
-  data.edges.forEach(e => kindCounts[e.kind] = (kindCounts[e.kind] || 0) + 1);
+  graph.edges.forEach(e => kindCounts[e.kind] = (kindCounts[e.kind] || 0) + 1);
 
   let html = '';
-  html += row('Repo', data.meta.repo);
-  html += row('Files parsed', data.meta.files_parsed);
-  html += row('Config files seen', data.meta.config_files);
-  html += row('Analysis time', data.meta.elapsed_seconds + 's');
+  html += row('Repo', graph.meta.repo);
+  html += row('Files parsed', graph.meta.files_parsed);
+  html += row('Config files seen', graph.meta.config_files);
+  html += row('Analysis time', graph.meta.elapsed_seconds + 's');
   html += `<div style="height:8px"></div>`;
   html += row('Functions/methods', (counts.function || 0) + (counts.method || 0));
   html += row('Classes', counts.class || 0);
   html += row('External calls found', kindCounts.calls_external || 0);
-  html += row('→ resolved to config', data.edges.filter(e => e.kind === 'configured_in').length);
+  html += row('→ resolved to config', graph.edges.filter(e => e.kind === 'configured_in').length);
   html += `<div style="height:8px"></div>`;
-  html += row('Escalated to Joern', data.meta.joern_escalated ?? 0);
-  html += row('→ resolved by Joern', data.meta.joern_resolved ?? 0);
-  html += row('Sent to SLM fallback', data.meta.llm_fallback_used ?? 0);
-  html += row('→ resolved by SLM', data.meta.llm_resolved ?? 0);
-  html += row('⚠ needs review', data.meta.needs_review ?? 0);
+  html += row('Escalated to Joern', graph.meta.joern_escalated ?? 0);
+  html += row('→ resolved by Joern', graph.meta.joern_resolved ?? 0);
+  html += row('Sent to SLM fallback', graph.meta.llm_fallback_used ?? 0);
+  html += row('→ resolved by SLM', graph.meta.llm_resolved ?? 0);
+  html += row('⚠ needs review', graph.meta.needs_review ?? 0);
+  if (view && (view.nodes.length !== graph.nodes.length || view.edges.length !== graph.edges.length)) {
+    html += `<div style="height:8px"></div>`;
+    html += row('Showing (current view)', `${view.nodes.length} nodes / ${view.edges.length} edges`);
+  }
   statsDiv.innerHTML = html;
 
   function row(label, val) {
@@ -474,44 +823,75 @@ function slugFromRepoUrl(url) {
   return tail.replace(/[^\w.-]+/g, '_').replace(/^_+|_+$/g, '') || 'graph';
 }
 
-function exportGraphJSON() {
-  if (!currentGraph) return;
-
-  // Export exactly what was rendered: every node and edge, plus the run
-  // meta (stage stats, escalation counts) so the file is self-describing
-  // without needing the dashboard open alongside it.
-  const payload = {
-    nodes: currentGraph.nodes,
-    edges: currentGraph.edges,
-    meta: currentGraph.meta,
-    exported_at: new Date().toISOString(),
-  };
-
+function downloadJSON(payload, suffix) {
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const objectUrl = URL.createObjectURL(blob);
   const ts = new Date().toISOString().replace(/[:.]/g, '-');
 
   const a = document.createElement('a');
   a.href = objectUrl;
-  a.download = `peach-graph_${slugFromRepoUrl(currentRepoUrl)}_${ts}.json`;
+  a.download = `peach-graph_${slugFromRepoUrl(currentRepoUrl)}_${suffix}_${ts}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(objectUrl);
 }
 
-exportBtn.addEventListener('click', exportGraphJSON);
+function exportGraphJSON() {
+  if (!currentGraph) return;
 
-function showDetail(n, data) {
+  // Export exactly what the server returned: every node and edge, plus the
+  // run meta (stage stats, escalation counts) so the file is
+  // self-describing without needing the dashboard open alongside it. This
+  // is unaffected by rollup/isolate view state — it's always the full graph.
+  const payload = {
+    nodes: currentGraph.nodes,
+    edges: currentGraph.edges,
+    meta: currentGraph.meta,
+    exported_at: new Date().toISOString(),
+  };
+  downloadJSON(payload, 'full');
+}
+
+function exportIsolatedJSON() {
+  if (!currentView || !viewState.isolate) return;
+
+  // Export exactly what's on screen in the isolated view — including any
+  // active rollup. Rolled-up nodes keep `_members`/`_baseLabel` so the
+  // underlying real node/edge ids stay traceable back to the full graph
+  // rather than being silently flattened away.
+  const payload = {
+    nodes: currentView.nodes,
+    edges: currentView.edges,
+    meta: {
+      ...currentGraph.meta,
+      isolated: true,
+      isolated_from_full_graph: true,
+      view_state: {
+        rollup_files: viewState.rollupFiles,
+        rollup_services: viewState.rollupServices,
+        hop_depth_used: hopDepth,
+      },
+    },
+    exported_at: new Date().toISOString(),
+  };
+  downloadJSON(payload, 'isolated');
+}
+
+exportBtn.addEventListener('click', exportGraphJSON);
+exportIsolatedBtn.addEventListener('click', exportIsolatedJSON);
+
+function showDetail(n, view) {
   let html = `<div class="d-title">${escapeHtml(n.label)}</div>`;
   html += drow('type', n.type);
   if (n.file) html += drow('file', n.file);
   if (n.path) html += drow('path', n.path);
   if (n.line) html += drow('line', n.line);
   if (n.pattern) html += drow('client pattern', n.pattern);
+  if (n._rolled_up) html += drow('contains', `${n._members.length}${n._synthetic ? '' : ' (incl. itself)'} node(s)`);
 
-  const incoming = data.edges.filter(e => e.to === n.id);
-  const outgoing = data.edges.filter(e => e.from === n.id);
+  const incoming = view.edges.filter(e => e.to === n.id);
+  const outgoing = view.edges.filter(e => e.from === n.id);
   html += `<div style="height:10px"></div><div class="d-title" style="font-size:11px;">connections</div>`;
   html += drow('incoming', incoming.length);
   html += drow('outgoing', outgoing.length);
@@ -521,13 +901,37 @@ function showDetail(n, data) {
     html += `<div style="height:8px"></div>`;
     extOut.forEach(e => {
       const flag = e.needs_review ? ' ⚠' : '';
-      html += `<div class="d-row"><span>${e.method || 'candidate'}${flag}</span><span>${e.to.replace('ext:','')}</span></div>`;
-      if (e.needs_review && e.review_reason) {
-        html += `<div class="empty-hint" style="margin:2px 0 6px; color:var(--c-review);">${escapeHtml(e.review_reason)}</div>`;
+      const count = e._count > 1 ? ` ×${e._count}` : '';
+      html += `<div class="d-row"><span>${e.method || 'candidate'}${flag}${count}</span><span>${e.to.replace('ext:','').replace('svc:','')}</span></div>`;
+      const reasons = e._review_reasons || (e.review_reason ? [e.review_reason] : []);
+      if (e.needs_review && reasons.length) {
+        html += `<div class="empty-hint" style="margin:2px 0 6px; color:var(--c-review);">${escapeHtml(reasons.join(' | '))}</div>`;
       }
     });
   }
+
+  html += `<div style="height:10px"></div>`;
+  if (n._rolled_up) {
+    html += `<button type="button" class="drill-btn" id="detail-drill-btn">⊕ Drill down</button>`;
+  } else if ((n.type === 'file' && viewState.rollupFiles && viewState.expandedFiles.has(n.path)) ||
+             (n.type === 'external_service' && viewState.rollupServices &&
+              viewState.expandedServicePatterns.has(n.pattern || 'unknown'))) {
+    html += `<button type="button" class="drill-btn" id="detail-collapse-btn">⊖ Collapse back</button>`;
+  }
+  html += `<button type="button" class="drill-btn" id="detail-isolate-btn">◉ Isolate + ${hopDepth} hop(s)</button>`;
+
   detailDiv.innerHTML = html;
+
+  const drillBtn = document.getElementById('detail-drill-btn');
+  if (drillBtn) drillBtn.addEventListener('click', () => toggleDrill(n, true));
+  const collapseBtn = document.getElementById('detail-collapse-btn');
+  if (collapseBtn) collapseBtn.addEventListener('click', () => toggleDrill(n, false));
+  const isoBtn = document.getElementById('detail-isolate-btn');
+  if (isoBtn) isoBtn.addEventListener('click', () => {
+    const seed = new Set([n.id]);
+    viewState.isolate = hopDepth > 0 ? expandHops(currentView.edges, seed, hopDepth) : seed;
+    rebuildNetwork();
+  });
 
   function drow(k, v) {
     return `<div class="d-row"><span>${k}</span><span>${escapeHtml(String(v))}</span></div>`;

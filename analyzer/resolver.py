@@ -46,8 +46,10 @@ class CallEdge:
     status: str = "unresolved"                              # internal | external_candidate | unresolved
     resolved_via: Optional[str] = None                       # "scip" | "tail_name", when status == "internal"
     external_pattern: Optional[str] = None
+    external_via: Optional[str] = None                       # "ast_grep" | "regex_fallback", when status == "external_candidate"
     literal: Optional[str] = None
     literal_method: Optional[str] = None                    # "literal" | "const_prop" | "joern" | "llm_inferred"
+    constprop_via: Optional[str] = None                      # "ast" | "regex_fallback", when literal_method == "const_prop"
     host: Optional[str] = None
     config_matches: list = field(default_factory=list)
     # --- stage 7/8 (Joern escalation / SLM fallback) bookkeeping ---
