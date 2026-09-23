@@ -140,6 +140,97 @@
     border-radius:8px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; display:none;
   }
 
+  /* ---- RAG status badge --------------------------------------------- */
+  .rag-badge{
+    display:none; align-items:center; gap:8px;
+    max-width:fit-content; margin:14px auto 0; padding:7px 14px;
+    background:var(--bg-panel); border:1px solid var(--line);
+    border-radius:99px; font-family:'IBM Plex Mono',monospace; font-size:12px;
+    color:var(--text-muted); transition:border-color .2s ease, color .2s ease;
+  }
+  .rag-badge.show{display:inline-flex;}
+  .rag-badge .rag-dot{
+    width:7px; height:7px; border-radius:50%; background:var(--text-faint); flex-shrink:0;
+  }
+  .rag-badge.embedding .rag-dot{
+    background:var(--accent); box-shadow:0 0 6px var(--accent);
+    animation:rag-pulse 1.1s ease-in-out infinite;
+  }
+  .rag-badge.embedding{border-color:var(--accent-dim); color:var(--text-primary);}
+  .rag-badge.ready{border-color:#2c3a2b; color:var(--ok);}
+  .rag-badge.ready .rag-dot{background:var(--ok); box-shadow:none; animation:none;}
+  .rag-badge.error{border-color:#5a2c2c; color:#e8a1a1;}
+  .rag-badge.error .rag-dot{background:#e05c5c; animation:none;}
+  @keyframes rag-pulse{
+    0%,100%{opacity:1; transform:scale(1);}
+    50%{opacity:.45; transform:scale(.75);}
+  }
+
+  /* ---- chat widget ---------------------------------------------------- */
+  .chat-toggle{
+    position:fixed; right:24px; bottom:24px; z-index:40;
+    display:none; align-items:center; gap:9px;
+    background:var(--accent); color:#241206; border:none;
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:14px;
+    padding:13px 20px; border-radius:99px; cursor:pointer;
+    box-shadow:0 6px 24px rgba(255,148,98,.25);
+    transition:filter .15s ease, transform .15s ease;
+  }
+  .chat-toggle:hover{filter:brightness(1.08); transform:translateY(-1px);}
+  .chat-toggle.show{display:flex;}
+  .chat-toggle .pulse-ring{
+    position:absolute; inset:-4px; border-radius:99px; border:2px solid var(--accent);
+    animation:ring-pulse 1.6s ease-out 2;
+  }
+  @keyframes ring-pulse{
+    0%{opacity:.7; transform:scale(1);}
+    100%{opacity:0; transform:scale(1.25);}
+  }
+
+  .chat-panel{
+    position:fixed; right:24px; bottom:24px; z-index:41;
+    width:380px; max-width:calc(100vw - 48px); height:520px; max-height:calc(100vh - 48px);
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:14px;
+    display:none; flex-direction:column; overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+  .chat-panel.open{display:flex;}
+  .chat-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px; border-bottom:1px solid var(--line-soft); flex-shrink:0;
+  }
+  .chat-head .title{font-size:14px; font-weight:600; color:var(--text-primary); display:flex; align-items:center; gap:8px;}
+  .chat-head .title .repo-tag{font-family:'IBM Plex Mono',monospace; font-weight:400; font-size:11px; color:var(--text-faint); max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .chat-close{background:none; border:none; color:var(--text-faint); font-size:18px; cursor:pointer; line-height:1; padding:2px;}
+  .chat-close:hover{color:var(--text-primary);}
+
+  .chat-log{flex:1; overflow-y:auto; padding:14px 16px; display:flex; flex-direction:column; gap:12px;}
+  .chat-empty{color:var(--text-faint); font-size:12.5px; font-family:'IBM Plex Mono',monospace; line-height:1.6; text-align:center; margin:auto;}
+  .chat-msg{max-width:88%; font-size:13px; line-height:1.55;}
+  .chat-msg.user{align-self:flex-end; background:var(--accent-dim); color:var(--text-primary); padding:9px 12px; border-radius:12px 12px 2px 12px;}
+  .chat-msg.bot{align-self:flex-start; background:var(--bg-panel-2); color:var(--text-primary); padding:9px 12px; border-radius:12px 12px 12px 2px; white-space:pre-wrap;}
+  .chat-msg.pending{color:var(--text-faint); font-style:italic;}
+  .chat-msg .sources{margin-top:8px; display:flex; flex-direction:column; gap:4px;}
+  .chat-msg .source-chip{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--text-faint);
+    border:1px solid var(--line); border-radius:5px; padding:3px 7px; width:fit-content;
+  }
+
+  .chat-input-row{display:flex; gap:8px; padding:12px; border-top:1px solid var(--line-soft); flex-shrink:0;}
+  .chat-input-row textarea{
+    flex:1; resize:none; background:var(--bg-void); border:1px solid var(--line);
+    color:var(--text-primary); font-family:'Space Grotesk',sans-serif; font-size:13px;
+    padding:9px 11px; border-radius:8px; outline:none; height:38px; line-height:1.4;
+  }
+  .chat-input-row textarea:focus{border-color:var(--accent-dim);}
+  .chat-input-row button{
+    background:var(--accent); color:#241206; border:none; border-radius:8px;
+    padding:0 16px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;
+    cursor:pointer; transition:filter .15s ease;
+  }
+  .chat-input-row button:hover{filter:brightness(1.08);}
+  .chat-input-row button:disabled{background:var(--accent-dim); color:#8a6a55; cursor:not-allowed;}
+
   .workspace{
     flex:1 1 auto; display:flex; min-height:0; overflow:hidden;
   }
@@ -278,6 +369,7 @@
 
   <div class="stages" id="stages"></div>
   <div class="error-banner" id="error-banner"></div>
+  <div class="rag-badge" id="rag-badge"><span class="rag-dot"></span><span id="rag-badge-text">Building knowledge base…</span></div>
 </div>
 
 <div class="workspace">
@@ -339,6 +431,24 @@
       <div>the system map will render here</div>
     </div>
     <div id="network" style="display:none;"></div>
+  </div>
+</div>
+
+<button type="button" class="chat-toggle" id="chat-toggle">
+  <span class="pulse-ring"></span>🍑 Ask about this repo
+</button>
+
+<div class="chat-panel" id="chat-panel">
+  <div class="chat-head">
+    <div class="title">Ask peach <span class="repo-tag mono" id="chat-repo-tag"></span></div>
+    <button type="button" class="chat-close" id="chat-close">✕</button>
+  </div>
+  <div class="chat-log" id="chat-log">
+    <div class="chat-empty" id="chat-empty">Ask things like "what breaks if I change X" — answers are grounded in this repo's actual code, not general knowledge.</div>
+  </div>
+  <div class="chat-input-row">
+    <textarea id="chat-input" placeholder="Ask a question about this repo…" rows="1"></textarea>
+    <button type="button" id="chat-send">Send</button>
   </div>
 </div>
 
@@ -408,6 +518,19 @@ const selectionCountEl = document.getElementById('selection-count');
 const hopValueEl = document.getElementById('hop-value');
 const hopMinusBtn = document.getElementById('hop-minus');
 const hopPlusBtn = document.getElementById('hop-plus');
+const ragBadge = document.getElementById('rag-badge');
+const ragBadgeText = document.getElementById('rag-badge-text');
+const chatToggle = document.getElementById('chat-toggle');
+const chatPanel = document.getElementById('chat-panel');
+const chatClose = document.getElementById('chat-close');
+const chatLog = document.getElementById('chat-log');
+const chatEmpty = document.getElementById('chat-empty');
+const chatInput = document.getElementById('chat-input');
+const chatSend = document.getElementById('chat-send');
+const chatRepoTag = document.getElementById('chat-repo-tag');
+
+let currentRunId = null;
+let ragPollTimer = null;
 
 // ---- pure data-transform layer -------------------------------------------
 // Node/edge shaping for rollup + isolate. Verified independently against a
@@ -730,6 +853,8 @@ form.addEventListener('submit', async (e) => {
   if (!url) return;
   currentRepoUrl = url;
 
+  resetRagAndChat();
+
   errorBanner.style.display = 'none';
   btn.disabled = true;
   btn.textContent = 'Mapping…';
@@ -763,6 +888,7 @@ form.addEventListener('submit', async (e) => {
     }
     allDone();
     renderGraph(data);
+    startRagPolling(data.meta && data.meta.run_id);
   } catch (err) {
     clearInterval(simTimer);
     allDone();
@@ -941,6 +1067,136 @@ function showDetail(n, view) {
 function escapeHtml(s) {
   return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+
+// ---- RAG status polling + chat --------------------------------------------
+
+function resetRagAndChat() {
+  clearInterval(ragPollTimer);
+  ragPollTimer = null;
+  currentRunId = null;
+  ragBadge.className = 'rag-badge';
+  chatToggle.classList.remove('show');
+  chatPanel.classList.remove('open');
+  chatLog.innerHTML = '';
+  chatEmpty.style.display = '';
+  chatLog.appendChild(chatEmpty);
+}
+
+function startRagPolling(runId) {
+  if (!runId) return; // backend didn't return one — nothing to poll
+  currentRunId = runId;
+  ragBadge.classList.add('show', 'embedding');
+  ragBadgeText.textContent = 'Building knowledge base…';
+
+  clearInterval(ragPollTimer);
+  ragPollTimer = setInterval(() => pollRagStatus(runId), 1500);
+  pollRagStatus(runId); // don't wait for the first tick
+}
+
+async function pollRagStatus(runId) {
+  if (runId !== currentRunId) return; // a newer repo superseded this poll
+  try {
+    const res = await fetch('/api/rag-status/' + encodeURIComponent(runId));
+    const data = await res.json();
+    if (runId !== currentRunId) return; // response landed after a newer repo started
+
+    if (data.status === 'embedding' || data.status === 'starting') {
+      ragBadge.className = 'rag-badge show embedding';
+      ragBadgeText.textContent = data.chunks
+        ? `Building knowledge base… (${data.chunks} chunks)`
+        : 'Building knowledge base…';
+    } else if (data.status === 'ready') {
+      clearInterval(ragPollTimer);
+      ragBadge.className = 'rag-badge show ready';
+      ragBadgeText.textContent = `Knowledge base ready (${data.chunks} chunks)`;
+      chatToggle.classList.add('show');
+      chatRepoTag.textContent = slugFromRepoUrl(currentRepoUrl);
+      setTimeout(() => ragBadge.classList.remove('show'), 4000); // fade the badge once the chat button is up
+    } else if (data.status === 'error') {
+      clearInterval(ragPollTimer);
+      ragBadge.className = 'rag-badge show error';
+      ragBadgeText.textContent = 'Knowledge base failed to build';
+    }
+    // 'unknown' — status not yet written server-side; keep polling silently.
+  } catch (err) {
+    // transient network hiccup — keep polling, don't alarm the user over one miss
+  }
+}
+
+chatToggle.addEventListener('click', () => {
+  chatPanel.classList.add('open');
+  chatInput.focus();
+});
+chatClose.addEventListener('click', () => chatPanel.classList.remove('open'));
+
+function appendChatMsg(role, text) {
+  chatEmpty.style.display = 'none';
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + role;
+  div.textContent = text;
+  chatLog.appendChild(div);
+  chatLog.scrollTop = chatLog.scrollHeight;
+  return div;
+}
+
+function appendSources(container, sources) {
+  if (!sources || !sources.length) return;
+  const box = document.createElement('div');
+  box.className = 'sources';
+  sources.slice(0, 5).forEach(s => {
+    const chip = document.createElement('div');
+    chip.className = 'source-chip';
+    const loc = (s.start_line && s.end_line) ? `:${s.start_line}-${s.end_line}` : '';
+    chip.textContent = `${s.name || s.path || '?'} — ${s.path || ''}${loc}`;
+    box.appendChild(chip);
+  });
+  container.appendChild(box);
+}
+
+async function sendChatMessage() {
+  const text = chatInput.value.trim();
+  if (!text || !currentRunId) return;
+  chatInput.value = '';
+  chatInput.style.height = '38px';
+  chatSend.disabled = true;
+
+  appendChatMsg('user', text);
+  const pending = appendChatMsg('bot pending', 'Thinking…');
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ run_id: currentRunId, message: text }),
+    });
+    const data = await res.json();
+    pending.classList.remove('pending');
+    if (!res.ok) {
+      pending.textContent = data.error || 'Something went wrong.';
+      return;
+    }
+    pending.textContent = data.answer;
+    appendSources(pending, data.sources);
+  } catch (err) {
+    pending.classList.remove('pending');
+    pending.textContent = 'Network error talking to the chatbot: ' + err.message;
+  } finally {
+    chatSend.disabled = false;
+  }
+}
+
+chatSend.addEventListener('click', sendChatMessage);
+chatInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChatMessage();
+  }
+});
+chatInput.addEventListener('input', () => {
+  chatInput.style.height = '38px';
+  chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+});
+
 </script>
 </body>
 </html>

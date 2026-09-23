@@ -28,7 +28,7 @@ def _import_target_file(raw: str, all_paths: list):
     return None
 
 
-def analyze_repo(url: str, progress=None, run_id: str = None) -> dict:
+def analyze_repo(url: str, progress=None, run_id: str = None, rag_hook=None) -> dict:
     """Run the full extraction pipeline.
 
     Every stage is wrapped in `obs.stage(...)`, which logs entry/exit,
@@ -81,6 +81,21 @@ def analyze_repo(url: str, progress=None, run_id: str = None) -> dict:
                 st["files"] = len(records)
                 st["code_files"] = len(code_records)
                 st["config_files"] = len(config_records)
+
+            if rag_hook:
+                # Same rationale as repo_root elsewhere in this function:
+                # the RAG indexer needs the real files on disk to pull
+                # source text for each chunk, so it has to run here, before
+                # the `finally` below removes repo_root. It's purely
+                # additive — analyze_repo's return value and every other
+                # stage are unaffected whether or not a hook is supplied.
+                note("Building semantic RAG index…")
+                with stage(ctx, "rag_index", LOG) as st:
+                    rag_summary = rag_hook(
+                        repo_root, code_records, config_records, ctx=ctx)
+                    if isinstance(rag_summary, dict):
+                        for k, v in rag_summary.items():
+                            st[k] = v
 
             note("Resolving internal symbols (SCIP, tail-name fallback where SCIP can't cover)…")
             with stage(ctx, "resolve", LOG) as st:
