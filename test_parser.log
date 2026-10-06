@@ -1,0 +1,11 @@
+13:52:12 INFO    parser_test.harness | Testing C:\Users\Imad\HudzProjects\ASB\peach\analyzer-new\parser.py
+13:52:12 INFO    parser_test.harness | grammar python     OK (root=module)
+13:52:12 INFO    parser_test.harness | grammar javascript OK (root=program)
+13:52:12 INFO    parser_test.harness | grammar typescript OK (root=program)
+13:52:12 INFO    parser_test.harness | grammar tsx        OK (root=program)
+13:52:12 INFO    parser_test.harness | Using local folder C:\Users\Imad\HudzProjects\Jeekay\Customer-Visit-latest
+13:52:12 INFO    parser_test.harness | Running parse_repo ...
+13:52:12 WARNING parser_test.parser | skipped file path=visit_entries-export-24-09.json reason=too_large size_bytes=477416 detail=477,416 bytes exceeds the 400,000-byte limit for non-source files
+13:52:21 WARNING parser_test.ctx | [parse] 1 file(s) were not parsed (1 too_large): visit_entries-export-24-09.json (too_large). Their definitions and calls are missing from the graph.
+13:52:21 INFO    parser_test.parser | parse complete files=30 code_files=20 config_files=3 skipped_files=1 definitions=95 calls=1311
+13:52:21 INFO    parser_test.harness | parse_repo finished: 30 records in 9.08s

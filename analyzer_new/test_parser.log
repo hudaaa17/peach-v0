@@ -1,0 +1,25 @@
+12:04:26 INFO    parser_test.harness | Testing /app/analyzer-new/parser.py
+12:04:27 INFO    parser_test.harness | grammar python     OK (root=module)
+12:04:27 INFO    parser_test.harness | grammar javascript OK (root=program)
+12:04:27 INFO    parser_test.harness | grammar typescript OK (root=program)
+12:04:27 INFO    parser_test.harness | grammar tsx        OK (root=program)
+12:04:27 INFO    parser_test.harness | Self-test: wrote 19 fixture files to /tmp/parser_test_dh6vv4yc/fixture_repo
+12:04:27 INFO    parser_test.harness | Running parse_repo ...
+12:04:27 WARNING parser_test.parser | skipped file path=big_generated.py reason=too_large size_bytes=2160000 detail=2,160,000 bytes exceeds the 2,000,000-byte limit for source files
+12:04:27 WARNING parser_test.parser | skipped file path=big.json reason=too_large size_bytes=460010 detail=460,010 bytes exceeds the 400,000-byte limit for non-source files
+12:04:27 WARNING parser_test.parser | skipped file path=huge.min.js reason=minified size_bytes=84000 detail=looks minified/bundled: 84,000 bytes averaging 84,000 chars per line (limit 300)
+12:04:27 WARNING parser_test.ctx | [parse] 3 file(s) were not parsed (1 minified, 2 too_large): huge.min.js (minified); big_generated.py (too_large); big.json (too_large). Their definitions and calls are missing from the graph.
+12:04:27 WARNING parser_test.parser | some files contain syntax errors files=1
+12:04:27 WARNING parser_test.ctx | [parse] 1 file(s) contain syntax errors; tree-sitter extracted what it could, but some definitions or calls in them may be missing.
+12:04:27 INFO    parser_test.parser | parse complete files=18 code_files=10 config_files=4 skipped_files=3 definitions=19 calls=142
+12:04:27 INFO    parser_test.harness | parse_repo finished: 18 records in 0.03s
+12:04:27 ERROR   parser_test.parser | parser raised on file file=/tmp/parser_test_dh6vv4yc/gap_exc/boom.py error=RuntimeError: synthetic parser failure
+12:04:27 WARNING parser_test.ctx | [parse] 1 file(s) were not parsed (1 parse_exception): boom.py (parse_exception). Their definitions and calls are missing from the graph.
+12:04:27 INFO    parser_test.parser | parse complete files=2 code_files=1 config_files=0 skipped_files=1 definitions=1 calls=0
+12:04:27 WARNING parser_test.parser | file cap reached; repo truncated cap=2 not_examined=3 note=raise max_files if the graph looks incomplete
+12:04:27 WARNING parser_test.ctx | [parse] Hit the 2-file cap; 3 further file(s) were not analyzed.
+12:04:27 INFO    parser_test.parser | parse complete files=2 code_files=2 config_files=0 skipped_files=0 definitions=2 calls=0
+12:04:27 INFO    parser_test.parser | parse complete files=1 code_files=1 config_files=0 skipped_files=0 definitions=1 calls=0
+12:04:27 WARNING parser_test.parser | tree-sitter unavailable for some/all files; used line-based fallback fallback_files=1 treesitter_files=0 reason=None
+12:04:27 WARNING parser_test.ctx | [parse] 1 file(s) were parsed with the minimal line-based fallback instead of tree-sitter. Their call sites are missing and definitions/imports are approximate.
+12:04:27 INFO    parser_test.parser | parse complete files=1 code_files=1 config_files=0 skipped_files=0 definitions=2 calls=0

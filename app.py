@@ -1,16 +1,19 @@
 import logging
+import os
+import secrets
 import threading
+import time
 import uuid
 
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, jsonify, render_template, request, session
 
 from analyzer.clone import CloneError
 from analyzer.pipeline import analyze_repo
 from rag_pipeline.rag_pipeline import RagIndexer
 from rag_pipeline.chatbot import QwenChat
 
-# Prototype-only: prints INFO+ logs (including the new rag_pipeline ones)
-# to console. Remove/replace if you already configure logging elsewhere
+# Prototype-only: prints INFO+ logs (including the rag_pipeline ones) to
+# console. Remove/replace if you already configure logging elsewhere
 # (e.g. gunicorn's logger).
 logging.basicConfig(
     level=logging.INFO,
@@ -19,6 +22,9 @@ logging.basicConfig(
 LOG = logging.getLogger("app")
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("PEACH_SECRET", secrets.token_hex(16))
+
+MAX_REPOS_PER_WORKSPACE = 3
 
 # Loads the embedding model once at process start, not on every request.
 # persist_dir is where the Chroma collections live on disk, one per run_id.
@@ -31,6 +37,12 @@ RAG_INDEXER = RagIndexer(persist_dir="./.peach_rag_db")
 # correct if you run multiple worker processes (e.g. gunicorn -w N>1),
 # since each process would have its own copy of this dict.
 RAG_STATUS: dict = {}
+
+# In-memory only — nothing persisted to disk. Restarting the process clears
+# it. Keyed by workspace_id (one per browser session) so the demo behaves
+# like separate free workspaces, and the admin view can see across all of
+# them.
+WORKSPACES = {}  # workspace_id -> {"name": str, "created": ts, "projects": {pid: project}}
 
 # The chat model is loaded lazily on first /api/chat call, not at startup —
 # it's a second model on top of the embedder, and no point paying for it
@@ -48,23 +60,46 @@ def get_chat_model() -> QwenChat:
     return _CHAT_MODEL
 
 
+def _workspace():
+    wid = session.get("wid")
+    if not wid or wid not in WORKSPACES:
+        wid = uuid.uuid4().hex[:10]
+        session["wid"] = wid
+        WORKSPACES[wid] = {"name": f"workspace-{wid[:5]}", "created": time.time(), "projects": {}}
+    return WORKSPACES[wid]
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
 
 
-@app.route("/api/analyze", methods=["POST"])
-def analyze():
+@app.route("/api/projects", methods=["GET"])
+def list_projects():
+    ws = _workspace()
+    return jsonify({"projects": list(ws["projects"].values()), "limit": MAX_REPOS_PER_WORKSPACE})
+
+
+@app.route("/api/connect", methods=["POST"])
+def connect_repo():
+    """Replaces the old /api/analyze: runs the full clone + graph + RAG
+    pipeline AND registers the result as a project in the caller's
+    workspace, so the repo panel has something to list."""
+    ws = _workspace()
+    if len(ws["projects"]) >= MAX_REPOS_PER_WORKSPACE:
+        return jsonify({"error": f"This workspace already has {MAX_REPOS_PER_WORKSPACE} repos connected."}), 400
+
     data = request.get_json(silent=True) or {}
-    url = (data.get("repo_url") or "").strip()
-    if not url:
+    repo_url = (data.get("repo_url") or "").strip()
+    if not repo_url:
         return jsonify({"error": "Please enter a GitHub repo URL."}), 400
+
     run_id = uuid.uuid4().hex
     RAG_STATUS[run_id] = {"status": "starting", "chunks": 0, "by_kind": None,
                            "elapsed_seconds": None, "error": None}
     try:
         graph = analyze_repo(
-            url, run_id=run_id,
+            repo_url, run_id=run_id,
             rag_hook=RAG_INDEXER.as_hook(run_id, status_store=RAG_STATUS))
     except CloneError as e:
         RAG_STATUS.pop(run_id, None)
@@ -72,8 +107,29 @@ def analyze():
     except Exception as e:  # noqa: BLE001 - surface a friendly message either way
         RAG_STATUS.pop(run_id, None)
         return jsonify({"error": f"Analysis failed: {e}"}), 500
+
     graph["meta"]["run_id"] = run_id  # frontend polls /api/rag-status/<run_id> with this
-    return jsonify(graph)
+
+    name = repo_url.rstrip("/").split("/")[-1].removesuffix(".git") or repo_url
+    project = {
+        "id": uuid.uuid4().hex[:10],
+        "name": name,
+        "url": repo_url,
+        "created": time.time(),
+        "run_id": run_id,
+        "graph": graph,
+    }
+    ws["projects"][project["id"]] = project
+    return jsonify({"project": project})
+
+
+@app.route("/api/projects/<pid>", methods=["DELETE"])
+def delete_project(pid):
+    ws = _workspace()
+    project = ws["projects"].pop(pid, None)
+    if project:
+        RAG_STATUS.pop(project.get("run_id"), None)
+    return jsonify({"ok": True})
 
 
 @app.route("/api/rag-status/<run_id>")
@@ -117,6 +173,37 @@ def chat():
             }
             for c in chunks
         ],
+    })
+
+
+@app.route("/api/admin/overview", methods=["GET"])
+def admin_overview():
+    # Demo-only: no auth gate on this route. Add one before deploying
+    # anywhere real users can reach it.
+    rows = []
+    total_nodes = 0
+    total_review = 0
+    for wid, ws in WORKSPACES.items():
+        for p in ws["projects"].values():
+            c = p["graph"]["meta"]["counters"]
+            total_nodes += len(p["graph"]["nodes"])
+            total_review += c.get("needs_review", 0)
+            rows.append({
+                "repo": p["url"], "workspace": ws["name"],
+                "nodes": len(p["graph"]["nodes"]), "needs_review": c.get("needs_review", 0),
+                "connected": p["created"],
+            })
+    workspaces = [{"name": w["name"], "repos": len(w["projects"]), "created": w["created"]}
+                  for w in WORKSPACES.values()]
+    return jsonify({
+        "stats": {
+            "workspaces": len(WORKSPACES),
+            "repos_mapped": sum(len(w["projects"]) for w in WORKSPACES.values()),
+            "total_nodes": total_nodes,
+            "needs_review": total_review,
+        },
+        "workspaces": workspaces,
+        "repos": rows,
     })
 
 

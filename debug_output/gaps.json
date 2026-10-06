@@ -1,0 +1,254 @@
+[
+  {
+    "stage": "parse",
+    "scope": "repo",
+    "kind": "vendored_dir",
+    "path": "",
+    "detail": "29 file(s) inside vendored/build directories were ignored by design: .git (29)",
+    "impact": "Code in these directories is not part of the graph. Calls into it are not resolved to it and may be reported as external.",
+    "count": 29,
+    "samples": [
+      ".git"
+    ]
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "examples/imagepipe/imagepipe.py",
+    "detail": "3 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 3,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "src/click/_compat.py",
+    "detail": "12 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 12,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "src/click/_termui_impl.py",
+    "detail": "3 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 3,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "src/click/_winconsole.py",
+    "detail": "12 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 12,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "src/click/core.py",
+    "detail": "17 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 17,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "src/click/decorators.py",
+    "detail": "6 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 6,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "src/click/shell_completion.py",
+    "detail": "1 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 1,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "src/click/termui.py",
+    "detail": "4 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 4,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "src/click/testing.py",
+    "detail": "1 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 1,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "src/click/types.py",
+    "detail": "4 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 4,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "src/click/utils.py",
+    "detail": "3 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 3,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "tests/test_abort_interrupt.py",
+    "detail": "1 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 1,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "tests/test_arguments.py",
+    "detail": "8 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 8,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "tests/test_chain.py",
+    "detail": "1 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 1,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "tests/test_commands.py",
+    "detail": "1 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 1,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "tests/test_deprecations.py",
+    "detail": "3 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 3,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "tests/test_formatting.py",
+    "detail": "1 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 1,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "tests/test_info_dict.py",
+    "detail": "2 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 2,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "tests/test_termui.py",
+    "detail": "5 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 5,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "tests/test_types/test_ParamType.py",
+    "detail": "2 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 2,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "tests/test_utils/test_echo_via_pager.py",
+    "detail": "12 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 12,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "tests/test_utils/test_make_default_short_help.py",
+    "detail": "1 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 1,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "tests/test_utils/test_prompt.py",
+    "detail": "1 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 1,
+    "samples": null
+  },
+  {
+    "stage": "scip",
+    "scope": "file",
+    "kind": "internal_unmapped",
+    "path": "tests/test_utils/test_sentinel.py",
+    "detail": "2 call(s) resolve (per SCIP) to code in this file, but the parser recorded no definition at that position (file past the file cap, or a construct the parser does not record).",
+    "impact": "These calls are internal and are NOT treated as external API calls, but there is no graph node for their target.",
+    "count": 2,
+    "samples": null
+  }
+]

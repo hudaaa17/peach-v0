@@ -1,1202 +1,850 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>peach — repo system map</title>
+<title>peach — repo system mapper</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍑</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg-void:#14110F;
-    --bg-panel:#1B1712;
-    --bg-panel-2:#211C16;
-    --line:#332C24;
-    --line-soft:#241F19;
-    --text-primary:#F2EAE0;
-    --text-muted:#978A7C;
-    --text-faint:#6B6055;
-    --accent:#FF9462;
-    --accent-dim:#7A4A32;
-    --ok:#8FBF8A;
-    --warn:#E0B15C;
-
-    --c-file:#8FA6C9;
-    --c-func:#8FBF8A;
-    --c-method:#6FA9A0;
-    --c-class:#C9A2E0;
-    --c-module:#6B6055;
-    --c-ext:#E08A5C;
-    --c-cfg:#D9C97A;
-    --c-review:#E05C5C;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;height:100%;}
-  body{
-    background:var(--bg-void);
-    color:var(--text-primary);
-    font-family:'Space Grotesk', system-ui, sans-serif;
-    height:100vh;
-    overflow:hidden;
-    display:flex;
-    flex-direction:column;
-  }
-  .mono{font-family:'IBM Plex Mono', monospace;}
-
-  header{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:20px 28px;
-    border-bottom:1px solid var(--line-soft);
-    flex-shrink:0;
-  }
-  .wordmark{
-    font-size:20px; font-weight:700; letter-spacing:-0.02em; color:var(--text-primary);
-    display:flex; align-items:baseline; gap:8px;
-  }
-  .wordmark span{color:var(--accent);}
-  .wordmark small{
-    font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:12px; color:var(--text-faint);
-    letter-spacing:0.02em;
-  }
-  header .meta{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--text-faint);}
-
-  .hero{
-    padding:56px 28px 32px;
-    text-align:center;
-    flex-shrink:0;
-    border-bottom:1px solid var(--line-soft);
-    transition:padding .4s ease;
-  }
-  .hero.compact{padding:22px 28px 20px;}
-  .hero h1{
-    font-size:30px; line-height:1.25; font-weight:600; margin:0 0 22px;
-    max-width:640px; margin-left:auto; margin-right:auto;
-    color:var(--text-primary);
-  }
-  .hero.compact h1{display:none;}
-  .hero p.sub{
-    font-size:13px; color:var(--text-faint); margin:10px 0 0; font-family:'IBM Plex Mono',monospace;
-  }
-  .hero.compact p.sub{display:none;}
-
-  form.repo-form{
-    display:flex; gap:10px; max-width:640px; margin:0 auto;
-  }
-  form.repo-form input[type=text]{
-    flex:1;
-    background:var(--bg-panel);
-    border:1px solid var(--line);
-    color:var(--text-primary);
-    font-family:'IBM Plex Mono', monospace;
-    font-size:14px;
-    padding:14px 16px;
-    border-radius:8px;
-    outline:none;
-  }
-  form.repo-form input[type=text]::placeholder{color:var(--text-faint);}
-  form.repo-form input[type=text]:focus{border-color:var(--accent-dim);}
-  form.repo-form button{
-    background:var(--accent);
-    color:#241206;
-    border:none;
-    font-family:'Space Grotesk', sans-serif;
-    font-weight:600;
-    font-size:14px;
-    padding:14px 22px;
-    border-radius:8px;
-    cursor:pointer;
-    transition:filter .15s ease;
-    white-space:nowrap;
-  }
-  form.repo-form button:hover{filter:brightness(1.08);}
-  form.repo-form button:disabled{background:var(--accent-dim); color:#8a6a55; cursor:progress;}
-
-  .stages{
-    display:flex; justify-content:center; flex-wrap:wrap; gap:8px 6px;
-    max-width:760px; margin:20px auto 0;
-  }
-  .stage-chip{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11.5px;
-    color:var(--text-faint);
-    border:1px solid var(--line);
-    padding:6px 11px;
-    border-radius:99px;
-    display:flex; align-items:center; gap:6px;
-    transition:all .25s ease;
-  }
-  .stage-chip .dot{width:6px; height:6px; border-radius:50%; background:var(--line); transition:background .25s ease;}
-  .stage-chip.active{color:var(--text-primary); border-color:var(--accent-dim); background:rgba(255,148,98,.06);}
-  .stage-chip.active .dot{background:var(--accent); box-shadow:0 0 8px var(--accent);}
-  .stage-chip.done{color:var(--ok); border-color:#2c3a2b;}
-  .stage-chip.done .dot{background:var(--ok);}
-
-  .error-banner{
-    max-width:640px; margin:14px auto 0; padding:12px 16px;
-    background:rgba(224,90,90,.08); border:1px solid #5a2c2c; color:#e8a1a1;
-    border-radius:8px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; display:none;
-  }
-
-  /* ---- RAG status badge --------------------------------------------- */
-  .rag-badge{
-    display:none; align-items:center; gap:8px;
-    max-width:fit-content; margin:14px auto 0; padding:7px 14px;
-    background:var(--bg-panel); border:1px solid var(--line);
-    border-radius:99px; font-family:'IBM Plex Mono',monospace; font-size:12px;
-    color:var(--text-muted); transition:border-color .2s ease, color .2s ease;
-  }
-  .rag-badge.show{display:inline-flex;}
-  .rag-badge .rag-dot{
-    width:7px; height:7px; border-radius:50%; background:var(--text-faint); flex-shrink:0;
-  }
-  .rag-badge.embedding .rag-dot{
-    background:var(--accent); box-shadow:0 0 6px var(--accent);
-    animation:rag-pulse 1.1s ease-in-out infinite;
-  }
-  .rag-badge.embedding{border-color:var(--accent-dim); color:var(--text-primary);}
-  .rag-badge.ready{border-color:#2c3a2b; color:var(--ok);}
-  .rag-badge.ready .rag-dot{background:var(--ok); box-shadow:none; animation:none;}
-  .rag-badge.error{border-color:#5a2c2c; color:#e8a1a1;}
-  .rag-badge.error .rag-dot{background:#e05c5c; animation:none;}
-  @keyframes rag-pulse{
-    0%,100%{opacity:1; transform:scale(1);}
-    50%{opacity:.45; transform:scale(.75);}
-  }
-
-  /* ---- chat widget ---------------------------------------------------- */
-  .chat-toggle{
-    position:fixed; right:24px; bottom:24px; z-index:40;
-    display:none; align-items:center; gap:9px;
-    background:var(--accent); color:#241206; border:none;
-    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:14px;
-    padding:13px 20px; border-radius:99px; cursor:pointer;
-    box-shadow:0 6px 24px rgba(255,148,98,.25);
-    transition:filter .15s ease, transform .15s ease;
-  }
-  .chat-toggle:hover{filter:brightness(1.08); transform:translateY(-1px);}
-  .chat-toggle.show{display:flex;}
-  .chat-toggle .pulse-ring{
-    position:absolute; inset:-4px; border-radius:99px; border:2px solid var(--accent);
-    animation:ring-pulse 1.6s ease-out 2;
-  }
-  @keyframes ring-pulse{
-    0%{opacity:.7; transform:scale(1);}
-    100%{opacity:0; transform:scale(1.25);}
-  }
-
-  .chat-panel{
-    position:fixed; right:24px; bottom:24px; z-index:41;
-    width:380px; max-width:calc(100vw - 48px); height:520px; max-height:calc(100vh - 48px);
-    background:var(--bg-panel); border:1px solid var(--line); border-radius:14px;
-    display:none; flex-direction:column; overflow:hidden;
-    box-shadow:0 20px 60px rgba(0,0,0,.5);
-  }
-  .chat-panel.open{display:flex;}
-  .chat-head{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:14px 16px; border-bottom:1px solid var(--line-soft); flex-shrink:0;
-  }
-  .chat-head .title{font-size:14px; font-weight:600; color:var(--text-primary); display:flex; align-items:center; gap:8px;}
-  .chat-head .title .repo-tag{font-family:'IBM Plex Mono',monospace; font-weight:400; font-size:11px; color:var(--text-faint); max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .chat-close{background:none; border:none; color:var(--text-faint); font-size:18px; cursor:pointer; line-height:1; padding:2px;}
-  .chat-close:hover{color:var(--text-primary);}
-
-  .chat-log{flex:1; overflow-y:auto; padding:14px 16px; display:flex; flex-direction:column; gap:12px;}
-  .chat-empty{color:var(--text-faint); font-size:12.5px; font-family:'IBM Plex Mono',monospace; line-height:1.6; text-align:center; margin:auto;}
-  .chat-msg{max-width:88%; font-size:13px; line-height:1.55;}
-  .chat-msg.user{align-self:flex-end; background:var(--accent-dim); color:var(--text-primary); padding:9px 12px; border-radius:12px 12px 2px 12px;}
-  .chat-msg.bot{align-self:flex-start; background:var(--bg-panel-2); color:var(--text-primary); padding:9px 12px; border-radius:12px 12px 12px 2px; white-space:pre-wrap;}
-  .chat-msg.pending{color:var(--text-faint); font-style:italic;}
-  .chat-msg .sources{margin-top:8px; display:flex; flex-direction:column; gap:4px;}
-  .chat-msg .source-chip{
-    font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--text-faint);
-    border:1px solid var(--line); border-radius:5px; padding:3px 7px; width:fit-content;
-  }
-
-  .chat-input-row{display:flex; gap:8px; padding:12px; border-top:1px solid var(--line-soft); flex-shrink:0;}
-  .chat-input-row textarea{
-    flex:1; resize:none; background:var(--bg-void); border:1px solid var(--line);
-    color:var(--text-primary); font-family:'Space Grotesk',sans-serif; font-size:13px;
-    padding:9px 11px; border-radius:8px; outline:none; height:38px; line-height:1.4;
-  }
-  .chat-input-row textarea:focus{border-color:var(--accent-dim);}
-  .chat-input-row button{
-    background:var(--accent); color:#241206; border:none; border-radius:8px;
-    padding:0 16px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;
-    cursor:pointer; transition:filter .15s ease;
-  }
-  .chat-input-row button:hover{filter:brightness(1.08);}
-  .chat-input-row button:disabled{background:var(--accent-dim); color:#8a6a55; cursor:not-allowed;}
-
-  .workspace{
-    flex:1 1 auto; display:flex; min-height:0; overflow:hidden;
-  }
-  .sidebar{
-    width:280px; flex-shrink:0;
-    border-right:1px solid var(--line-soft);
-    padding:20px;
-    overflow-y:auto;
-    background:var(--bg-panel-2);
-  }
-  .sidebar h2{
-    font-size:11px; text-transform:uppercase; letter-spacing:.08em;
-    color:var(--text-faint); font-weight:600; margin:0 0 12px;
-    font-family:'IBM Plex Mono', monospace;
-  }
-  .legend-row{display:flex; align-items:center; gap:9px; padding:6px 0; font-size:13px; color:var(--text-muted);}
-  .legend-swatch{width:11px; height:11px; border-radius:3px; flex-shrink:0;}
-  .sidebar .divider{height:1px; background:var(--line-soft); margin:18px 0;}
-  .empty-hint{color:var(--text-faint); font-size:12.5px; line-height:1.6; font-family:'IBM Plex Mono',monospace;}
-
-  #detail-panel{font-size:13px; color:var(--text-muted); line-height:1.6;}
-  #detail-panel .d-title{color:var(--text-primary); font-weight:600; font-family:'IBM Plex Mono',monospace; font-size:13px; word-break:break-all; margin-bottom:8px;}
-  #detail-panel .d-row{display:flex; justify-content:space-between; gap:8px; padding:3px 0; font-family:'IBM Plex Mono',monospace; font-size:11.5px;}
-  #detail-panel .d-row span:first-child{color:var(--text-faint);}
-
-  .stat-row{display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--text-faint); padding:3px 0;}
-
-  .export-btn{
-    display:flex; align-items:center; justify-content:center; gap:7px;
-    width:100%;
-    background:transparent;
-    color:var(--text-muted);
-    border:1px solid var(--line);
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    padding:9px 10px;
-    border-radius:7px;
-    cursor:pointer;
-    margin-top:10px;
-    transition:border-color .15s ease, color .15s ease;
-  }
-  .export-btn:hover{border-color:var(--accent-dim); color:var(--text-primary);}
-  .export-btn:disabled{opacity:.4; cursor:not-allowed;}
-  .export-btn:disabled:hover{border-color:var(--line); color:var(--text-muted);}
-  .stat-row b{color:var(--text-muted); font-weight:500;}
-
-  .export-btn.secondary{border-style:dashed;}
-  .export-btn.accent{border-color:var(--accent-dim); color:var(--accent);}
-  .export-btn.accent:hover{border-color:var(--accent); color:var(--accent);}
-  .btn-row{display:flex; gap:8px;}
-  .btn-row .export-btn{margin-top:0;}
-
-  .toggle-row{
-    display:flex; align-items:center; gap:9px; padding:6px 0;
-    font-size:12.5px; color:var(--text-muted); cursor:pointer; user-select:none;
-  }
-  .toggle-row input[type=checkbox]{
-    appearance:none; -webkit-appearance:none; width:15px; height:15px; flex-shrink:0;
-    border:1px solid var(--line); border-radius:4px; background:var(--bg-panel);
-    cursor:pointer; position:relative; transition:border-color .15s ease, background .15s ease;
-  }
-  .toggle-row input[type=checkbox]:checked{background:var(--accent); border-color:var(--accent);}
-  .toggle-row input[type=checkbox]:checked::after{
-    content:''; position:absolute; left:4px; top:1px; width:4px; height:8px;
-    border:solid #241206; border-width:0 2px 2px 0; transform:rotate(45deg);
-  }
-  .toggle-row .hint{color:var(--text-faint); font-size:11px; margin-left:auto; font-family:'IBM Plex Mono',monospace;}
-
-  .view-hint{color:var(--text-faint); font-size:11px; line-height:1.6; font-family:'IBM Plex Mono',monospace; margin:8px 0 2px;}
-
-  .hop-row{display:flex; align-items:center; justify-content:space-between; gap:8px; margin:10px 0;}
-  .hop-row label{font-size:12px; color:var(--text-muted);}
-  .stepper{display:flex; align-items:center; gap:0; border:1px solid var(--line); border-radius:6px; overflow:hidden;}
-  .stepper button{
-    background:var(--bg-panel); border:none; color:var(--text-muted); width:22px; height:22px;
-    font-family:'IBM Plex Mono',monospace; font-size:13px; cursor:pointer; line-height:1;
-  }
-  .stepper button:hover{background:var(--bg-panel-2); color:var(--text-primary);}
-  .stepper span{
-    width:22px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:12px;
-    color:var(--text-primary); border-left:1px solid var(--line); border-right:1px solid var(--line);
-    line-height:22px;
-  }
-
-  .selection-badge{
-    display:flex; align-items:center; justify-content:space-between;
-    font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--text-faint);
-    padding:7px 9px; background:var(--bg-panel); border:1px solid var(--line-soft);
-    border-radius:6px; margin:8px 0 10px;
-  }
-  .selection-badge b{color:var(--text-primary); font-weight:600;}
-
-  .isolate-banner{
-    display:none; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace;
-    font-size:11.5px; color:var(--accent); background:rgba(255,148,98,.08);
-    border:1px solid var(--accent-dim); border-radius:6px; padding:7px 9px; margin-bottom:10px;
-  }
-  .isolate-banner.active{display:flex;}
-
-  .drill-btn{
-    display:inline-flex; align-items:center; gap:5px; margin-top:8px;
-    background:transparent; border:1px solid var(--line); color:var(--text-muted);
-    font-family:'IBM Plex Mono',monospace; font-size:11px; padding:5px 9px;
-    border-radius:6px; cursor:pointer; transition:border-color .15s ease, color .15s ease;
-  }
-  .drill-btn:hover{border-color:var(--accent-dim); color:var(--text-primary);}
-  .drill-btn + .drill-btn{margin-left:6px;}
-
-  .graph-area{flex:1; position:relative; min-width:0; min-height:0; height:100%;}
-  #network{width:100%; height:100%;}
-  .graph-placeholder{
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    color:var(--text-faint); font-family:'IBM Plex Mono',monospace; font-size:13px; text-align:center;
-    flex-direction:column; gap:8px;
-  }
-  .graph-placeholder .icon{font-size:34px; opacity:.5;}
-
-  ::-webkit-scrollbar{width:8px;}
-  ::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+:root{
+  --bg:#14110F; --surface:#1B1712; --line:#332C24; --line-soft:#241F19;
+  --ink:#F2EAE0; --ink-soft:#978A7C; --ink-faint:#6B6055;
+  --coral:#FF9462; --coral-soft:#FFAB7C; --peach:#7A4A32; --peach-light:rgba(255,148,98,.14);
+  --amber:#E05C5C; --warn-bg:rgba(224,92,92,.10); --warn-border:rgba(224,92,92,.4); --warn-text:#E8A1A1;
+  --file:#8FA6C9; --fn:#8FBF8A; --ext:#E08A5C; --cfg:#D9C97A;
+  --on-accent:#241206;
+  --shadow:0 1px 3px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;}
+h1,h2,h3,.serif{font-family:'Fraunces',serif;}
+button{font-family:inherit;cursor:pointer;}
+.topbar{display:flex;align-items:center;gap:16px;padding:14px 22px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;}
+.wordmark{font-size:22px;font-weight:600;color:var(--coral);}
+.crumb{color:var(--ink-soft);font-size:14px;}
+.crumbLink{cursor:pointer;color:var(--coral);font-weight:600;}
+.crumbLink:hover{text-decoration:underline;}
+.spacer{flex:1}
+/* inputs/textareas rely on browser defaults (white bg) which don't work on a dark surface */
+.modal input,.chatIn input,textarea{background:var(--surface);color:var(--ink);}
+.roleToggle{display:flex;background:var(--line-soft);border-radius:999px;padding:3px;gap:2px;}
+.roleToggle button{border:none;background:transparent;padding:7px 14px;border-radius:999px;font-size:13px;font-weight:600;color:var(--ink-soft);}
+.roleToggle button.active{background:var(--coral);color:var(--on-accent);}
+.view{display:none;padding:26px 30px 60px;max-width:1200px;margin:0 auto;}
+.view.active{display:block;}
+.dashHead h1{font-size:28px;margin:0 0 4px;font-weight:600;}
+.sub{color:var(--ink-soft);font-size:14px;margin:0 0 26px;}
+.errbox{background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn-text);border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:16px;display:none;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);}
+.pcard{cursor:pointer;transition:border-color .15s;position:relative;}
+.pcard:hover{border-color:var(--coral-soft);}
+.pcard .name{font-weight:600;font-size:16px;margin-bottom:2px;padding-right:22px;}
+.pcard .url{color:var(--ink-soft);font-size:12.5px;word-break:break-all;margin-bottom:14px;}
+.statrow{display:flex;gap:14px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--line-soft);padding-top:10px;}
+.statrow b{color:var(--ink);font-weight:600;}
+.delBtn{position:absolute;top:12px;right:12px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink-faint);font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;}
+.delBtn:hover{color:var(--on-accent);background:var(--coral);border-color:var(--coral);}
+.addcard{border:1.5px dashed var(--peach);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--coral);min-height:130px;text-align:center;}
+.addcard.disabled{opacity:.5;cursor:not-allowed;color:var(--ink-faint);border-color:var(--line);}
+.plus{font-size:26px;line-height:1;}
+.limitNote{font-size:12px;color:var(--ink-faint);margin-top:4px;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:100;padding:16px;}
+.overlay.active{display:flex;}
+.modal{background:var(--surface);border-radius:16px;padding:24px;width:100%;max-width:420px;box-shadow:0 12px 40px rgba(0,0,0,.5);}
+.modal h3{margin:0 0 4px;font-size:18px;}
+.modal p{color:var(--ink-soft);font-size:13px;margin:0 0 16px;}
+.modal input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-size:14px;margin-bottom:14px;font-family:inherit;}
+.btnrow{display:flex;gap:10px;justify-content:flex-end;}
+.btn{border:none;border-radius:9px;padding:9px 16px;font-size:13.5px;font-weight:600;}
+.btn.primary{background:var(--coral);color:var(--on-accent);}
+.btn.primary:disabled{background:var(--ink-faint);cursor:not-allowed;}
+.btn.ghost{background:var(--line-soft);color:var(--ink);}
+.progress{font-size:13px;color:var(--ink-soft);display:none;}
+.progress.active{display:block;}
+.pstep{padding:3px 0;}
+.pstep.done{color:var(--coral);}
+.gwrap{display:none;height:calc(100vh - 58px);}
+.gwrap.active{display:flex;}
+.gside{width:230px;border-right:1px solid var(--line);background:var(--surface);padding:16px;overflow-y:auto;flex-shrink:0;}
+.gside h4{font-size:11px;color:var(--ink-soft);margin:14px 0 8px;font-weight:600;}
+.gside h4:first-child{margin-top:0;}
+.hint{font-size:11px;color:var(--ink-faint);margin:-4px 0 10px;line-height:1.4;}
+.legend{display:flex;flex-direction:column;gap:6px;margin-bottom:6px;font-size:12.5px;}
+.legend span{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;vertical-align:-1px;}
+.toolbtn{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:13px;margin-bottom:7px;color:var(--ink);}
+.toolbtn:hover{border-color:var(--coral-soft);}
+.toolbtn.on{background:var(--peach-light);border-color:var(--coral-soft);}
+.viewRow{display:flex;gap:6px;margin-bottom:4px;}
+.viewRow .toolbtn{flex:1;justify-content:center;margin-bottom:0;}
+.reviewLine{width:100%;text-align:left;background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--warn-text);margin-bottom:6px;}
+.annotItem{font-size:12px;padding:6px 7px;border-radius:7px;border:1px solid var(--line);margin-bottom:5px;cursor:pointer;}
+.annotItem:hover{border-color:var(--coral-soft);}
+.annotItem b{display:block;font-size:12px;}
+.annotItem span{color:var(--ink-soft);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.gmain{flex:1;position:relative;overflow:hidden;background:radial-gradient(circle at 30% 20%,#1B1712,var(--bg));}
+svg#g{width:100%;height:100%;touch-action:none;}
+.node{cursor:grab;}
+.node circle.main{stroke:var(--bg);stroke-width:2;}
+.node circle.ring{fill:none;stroke:var(--coral);stroke-width:1.6;stroke-dasharray:3 2;}
+.node.selected circle.main{stroke:var(--coral);stroke-width:3;}
+.node text{font-size:10.5px;fill:var(--ink);pointer-events:none;}
+.node.dim{opacity:.15;}
+.edge{stroke:var(--ink-faint);stroke-width:1.4;fill:none;}
+.edge.review{stroke:var(--amber);stroke-dasharray:4 3;}
+.edge.dim{opacity:.08;}
+.notepin{fill:var(--coral);stroke:var(--bg);stroke-width:1;}
+.selrect{fill:rgba(255,148,98,.14);stroke:var(--coral-soft);stroke-dasharray:5 3;stroke-width:1.3;}
+.floatPanel{position:absolute;width:270px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 26px rgba(0,0,0,.45);display:none;max-height:calc(100% - 28px);}
+.floatPanel.active{display:flex;flex-direction:column;}
+.floatHead{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line);cursor:move;border-radius:14px 14px 0 0;background:var(--line-soft);flex-shrink:0;}
+.floatHead b{font-size:13px;}
+.floatHead .ctrls{display:flex;gap:6px;}
+.floatHead button{background:none;border:none;color:var(--ink-soft);font-size:13px;padding:2px 4px;}
+.floatHead button:hover{color:var(--coral);}
+.floatBody{padding:14px;overflow-y:auto;}
+.floatPanel.minimized .floatBody{display:none;}
+.floatPanel.minimized{width:180px;}
+#panel{top:14px;right:14px;}
+#selPopup{top:80px;left:340px;width:250px;}
+.tag{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--peach-light);color:var(--coral-soft);margin:4px 0 10px;}
+.panel .row{font-size:12.5px;color:var(--ink-soft);margin-bottom:4px;}
+.panel .row b{color:var(--ink);}
+textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12.5px;font-family:inherit;resize:vertical;min-height:50px;}
+.reviewbox{background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:8px;padding:8px;font-size:12px;color:var(--warn-text);margin:8px 0;}
+.connlist{list-style:none;padding:0;margin:6px 0 0;font-size:12.5px;}
+.connlist li{padding:4px 0;border-top:1px solid var(--line-soft);cursor:pointer;color:var(--ink-soft);}
+.connlist li:hover{color:var(--coral);}
+.secTitle{font-size:11.5px;font-weight:600;color:var(--ink-soft);margin:12px 0 6px;}
+.incItem{background:var(--line-soft);border-radius:8px;padding:6px 8px;font-size:11.5px;margin-bottom:5px;}
+.incItem time{color:var(--ink-faint);font-size:10.5px;display:block;margin-top:2px;}
+.smallbtn{border:none;background:var(--coral);color:var(--on-accent);border-radius:7px;padding:6px 10px;font-size:11.5px;margin-top:6px;}
+.ghostbtn{border:1px solid var(--line);background:none;color:var(--ink-soft);border-radius:7px;padding:6px 10px;font-size:11.5px;margin-top:6px;}
+.chatToggle{position:absolute;bottom:16px;right:14px;background:var(--coral);color:var(--on-accent);border:none;border-radius:999px;padding:11px 16px;font-size:13px;font-weight:600;box-shadow:0 4px 14px rgba(255,148,98,.35);}
+.chatbox{position:absolute;bottom:16px;right:14px;width:290px;height:360px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.45);display:none;flex-direction:column;overflow:hidden;}
+.chatbox.active{display:flex;}
+.chatHead{padding:11px 14px;border-bottom:1px solid var(--line);font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center;}
+.chatHead button{background:none;border:none;color:var(--ink-soft);font-size:15px;}
+.chatMsgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;}
+.msg{font-size:12.5px;padding:8px 10px;border-radius:10px;max-width:85%;line-height:1.4;}
+.msg.user{background:var(--peach-light);align-self:flex-end;}
+.msg.bot{background:var(--line-soft);align-self:flex-start;}
+.chatIn{display:flex;border-top:1px solid var(--line);}
+.chatIn input{flex:1;border:none;padding:10px 12px;font-size:12.5px;font-family:inherit;}
+.chatIn input:focus{outline:none;}
+.chatIn button{border:none;background:var(--coral);color:var(--on-accent);padding:0 14px;font-size:13px;}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px;}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;}
+.stat .num{font-size:24px;font-weight:600;font-family:'Fraunces',serif;color:var(--coral);}
+.stat .lbl{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:13px;}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line-soft);}
+th{color:var(--ink-soft);font-weight:600;font-size:11.5px;background:var(--line-soft);}
+tr:last-child td{border-bottom:none;}
+.sectitle{font-size:15px;font-weight:600;margin:26px 0 10px;}
+.backlink{font-size:13px;color:var(--coral);background:none;border:none;padding:0;margin-bottom:14px;font-weight:600;}
+/* semantic view */
+#semanticView{display:none;position:absolute;inset:0;overflow-y:auto;padding:26px 40px;}
+#semanticView.active{display:block;}
+.semNote{font-size:12px;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;max-width:640px;margin:0 auto 22px;}
+.semFlow{max-width:520px;margin:0 auto;}
+.semBox{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--coral-soft);border-radius:10px;padding:12px 14px;margin-bottom:6px;box-shadow:var(--shadow);}
+.semBox b{font-size:13.5px;}
+.semBox div{font-size:12px;color:var(--ink-soft);margin-top:3px;}
+.semArrow{text-align:center;color:var(--peach);font-size:16px;margin:-2px 0 4px;}
+.semSummary{max-width:520px;margin:24px auto 0;background:var(--peach-light);border-radius:12px;padding:14px 16px;font-size:13px;line-height:1.6;color:var(--ink);}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="wordmark">peach<span>.</span><small>repo system mapper</small></div>
-  <div class="meta" id="header-meta">tree-sitter → scip → ast-grep → literal → const-prop → config → joern → slm</div>
-</header>
-
-<div class="hero" id="hero">
-  <h1>Point peach at a public repo, get its structural map back.</h1>
-  <form class="repo-form" id="repo-form">
-    <input type="text" id="repo-url" class="mono" placeholder="github.com/owner/repo" autocomplete="off" spellcheck="false">
-    <button type="submit" id="submit-btn">Map it</button>
-  </form>
-  <p class="sub">Clones a shallow copy, parses it, then throws it away. No data is stored.</p>
-
-  <div class="stages" id="stages"></div>
-  <div class="error-banner" id="error-banner"></div>
-  <div class="rag-badge" id="rag-badge"><span class="rag-dot"></span><span id="rag-badge-text">Building knowledge base…</span></div>
+<div class="topbar">
+  <div class="wordmark">peach</div>
+  <div class="crumb" id="crumb">Dashboard</div>
+  <div class="spacer"></div>
+  <div class="roleToggle">
+    <button class="active" id="roleUserBtn" onclick="setRole('user')">User</button>
+    <button id="roleAdminBtn" onclick="setRole('admin')">Admin</button>
+  </div>
 </div>
 
-<div class="workspace">
-  <div class="sidebar">
-    <h2>Legend</h2>
-    <div class="legend-row"><span class="legend-swatch" style="background:var(--c-file)"></span>File</div>
-    <div class="legend-row"><span class="legend-swatch" style="background:var(--c-func)"></span>Function</div>
-    <div class="legend-row"><span class="legend-swatch" style="background:var(--c-method)"></span>Method</div>
-    <div class="legend-row"><span class="legend-swatch" style="background:var(--c-class)"></span>Class</div>
-    <div class="legend-row"><span class="legend-swatch" style="background:var(--c-module)"></span>Module scope</div>
-    <div class="legend-row"><span class="legend-swatch" style="background:var(--c-ext)"></span>External service</div>
-    <div class="legend-row"><span class="legend-swatch" style="background:var(--c-cfg)"></span>Config / manifest</div>
-    <div class="legend-row"><span class="legend-swatch" style="background:var(--c-review); border-radius:50%;"></span>Needs review (Joern/SLM guess)</div>
+<div class="view active" id="view-dash">
+  <div class="dashHead"><h1>Your projects</h1></div>
+  <p class="sub">Connect a public GitHub repo to map its services and calls. This workspace can connect up to 3 repos.</p>
+  <div class="errbox" id="dashErr"></div>
+  <div class="grid" id="projectGrid"></div>
+</div>
 
-    <div class="divider"></div>
-    <h2>Run stats</h2>
-    <div id="stats"><div class="empty-hint">Run an analysis to see stats.</div></div>
-    <button type="button" class="export-btn" id="export-btn" disabled>⭳ Export full graph (JSON)</button>
+<div class="gwrap" id="view-graph">
+  <div class="gside">
+    <h4>Node types</h4>
+    <div class="legend">
+      <div><span style="background:var(--file)"></span>File</div>
+      <div><span style="background:var(--fn)"></span>Function / class</div>
+      <div><span style="background:var(--ext)"></span>External service</div>
+      <div><span style="background:var(--cfg)"></span>Config match</div>
+    </div>
+    <div class="hint">Drag any node to reposition it. Drag on empty space to select a region. Double-click a file to drill into just that file.</div>
 
-    <div class="divider"></div>
-    <h2>View</h2>
-    <label class="toggle-row">
-      <input type="checkbox" id="rollup-files-toggle">
-      Rollup by file
-    </label>
-    <label class="toggle-row">
-      <input type="checkbox" id="rollup-services-toggle">
-      Rollup by service pattern
-    </label>
-    <div class="view-hint">Collapses calls up to the file / client-library level. Double-click a rolled-up node to drill in, or use the buttons on its detail panel.</div>
+    <h4>View</h4>
+    <div class="viewRow">
+      <button class="toolbtn on" id="viewDefaultBtn" onclick="setGraphView('default')">Default</button>
+      <button class="toolbtn" id="viewSemanticBtn" onclick="setGraphView('semantic')">Semantic</button>
+    </div>
+    <button class="toolbtn" id="rollupBtn" onclick="toggleRollup()"><span id="rollupLbl">Drill down (show functions)</span></button>
+    <button class="toolbtn" onclick="clearIsolate()">Show full graph</button>
 
-    <div class="divider"></div>
-    <h2>Isolate</h2>
-    <div class="view-hint">Ctrl/Cmd-click nodes in the graph to multi-select, then isolate just that neighborhood.</div>
-    <div class="selection-badge"><span>Selected in graph</span><b id="selection-count">0</b></div>
-    <div class="hop-row">
-      <label>+ neighbor hops</label>
-      <div class="stepper">
-        <button type="button" id="hop-minus">−</button>
-        <span id="hop-value">1</span>
-        <button type="button" id="hop-plus">+</button>
+    <h4>Export</h4>
+    <button class="toolbtn" onclick="exportJSON()">Export graph JSON</button>
+    <button class="toolbtn" onclick="exportSVG()">Export graph SVG (as arranged)</button>
+
+    <h4>Run diagnostics</h4>
+    <div id="diagBox"></div>
+
+    <h4>Annotations</h4>
+    <div id="annotList" style="margin-bottom:6px;"></div>
+    <button class="toolbtn" onclick="clearAnnotations()">Clear all annotations</button>
+  </div>
+  <div class="gmain">
+    <svg id="g"></svg>
+    <div id="semanticView"></div>
+
+    <div class="floatPanel" id="panel">
+      <div class="floatHead" id="panelHead"><b id="panelTitleText">Node</b><div class="ctrls"><button onclick="closePanel()">✕</button></div></div>
+      <div class="floatBody" id="panelBody"></div>
+    </div>
+
+    <div class="floatPanel" id="selPopup">
+      <div class="floatHead" id="selPopupHead"><b>Selection note</b><div class="ctrls"><button onclick="toggleMinimize('selPopup')" id="selMinBtn">–</button><button onclick="closeSelPopup()">✕</button></div></div>
+      <div class="floatBody">
+        <div class="row" id="selCount" style="margin-bottom:8px;"></div>
+        <textarea id="selNoteInput" placeholder="Write a note about this selection…"></textarea>
+        <button class="smallbtn" onclick="applyNoteToSelection()">Apply to selection</button>
+        <button class="ghostbtn" onclick="closeSelPopup()">Cancel</button>
       </div>
     </div>
-    <div class="btn-row">
-      <button type="button" class="export-btn" id="isolate-btn" disabled>Isolate</button>
-      <button type="button" class="export-btn" id="exit-isolate-btn" disabled>Exit</button>
-    </div>
-    <div class="isolate-banner" id="isolate-banner"><span>◉</span><span id="isolate-banner-text">Isolated view active</span></div>
-    <button type="button" class="export-btn accent" id="export-isolated-btn" disabled>⭳ Export isolated graph (JSON)</button>
 
-    <div class="divider"></div>
-    <h2>Selected node</h2>
-    <div id="detail-panel"><div class="empty-hint">Click a node in the graph to inspect it.</div></div>
-  </div>
-
-  <div class="graph-area">
-    <div class="graph-placeholder" id="placeholder">
-      <div class="icon">🍑</div>
-      <div>the system map will render here</div>
+    <button class="chatToggle" id="chatToggle" onclick="toggleChat()">Ask about this repo</button>
+    <div class="chatbox" id="chatbox">
+      <div class="chatHead"><span>Repo assistant (preview)</span><button onclick="toggleChat()">✕</button></div>
+      <div class="chatMsgs" id="chatMsgs"></div>
+      <div class="chatIn"><input id="chatInput" placeholder="Ask a question…" onkeydown="if(event.key==='Enter')sendChat()"><button onclick="sendChat()">Send</button></div>
     </div>
-    <div id="network" style="display:none;"></div>
   </div>
 </div>
 
-<button type="button" class="chat-toggle" id="chat-toggle">
-  <span class="pulse-ring"></span>🍑 Ask about this repo
-</button>
+<div class="view" id="view-admin">
+  <button class="backlink" onclick="setRole('user')">← Back to user view</button>
+  <h1 style="font-size:26px;font-weight:600;margin:0 0 4px;">Admin overview</h1>
+  <p class="sub">Read-only view across all workspaces on this instance. In-memory only — clears on server restart.</p>
+  <div class="stats" id="adminStats"></div>
+  <div class="sectitle">Workspaces</div>
+  <table><thead><tr><th>Workspace</th><th>Repos connected</th><th>Created</th></tr></thead><tbody id="wsBody"></tbody></table>
+  <div class="sectitle">All repo connections</div>
+  <table><thead><tr><th>Repo</th><th>Workspace</th><th>Nodes</th><th>Needs review</th><th>Connected</th></tr></thead><tbody id="repoBody"></tbody></table>
+</div>
 
-<div class="chat-panel" id="chat-panel">
-  <div class="chat-head">
-    <div class="title">Ask peach <span class="repo-tag mono" id="chat-repo-tag"></span></div>
-    <button type="button" class="chat-close" id="chat-close">✕</button>
-  </div>
-  <div class="chat-log" id="chat-log">
-    <div class="chat-empty" id="chat-empty">Ask things like "what breaks if I change X" — answers are grounded in this repo's actual code, not general knowledge.</div>
-  </div>
-  <div class="chat-input-row">
-    <textarea id="chat-input" placeholder="Ask a question about this repo…" rows="1"></textarea>
-    <button type="button" id="chat-send">Send</button>
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3>Connect a repo</h3>
+    <p>Public GitHub repos only. Paste a full URL or <code>owner/repo</code>. Analysis runs live on the server — small repos take a few seconds.</p>
+    <input id="repoInput" placeholder="owner/repo or https://github.com/owner/repo">
+    <div class="progress" id="progress"></div>
+    <div class="btnrow">
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn primary" id="mapBtn" onclick="runConnect()">Map it</button>
+    </div>
   </div>
 </div>
 
 <script>
-const STAGES = [
-  "Connect repo",
-  "Tree-sitter parse",
-  "SCIP symbol resolution",
-  "ast-grep pattern match",
-  "Literal check",
-  "Constant-prop check",
-  "Config check",
-  "Escalate to Joern",
-  "SLM fallback (Qwen2.5-Coder)",
+let projects = [];
+let activeProject = null;
+let isolateId = null;
+let reviewIsolateActive = false;
+let rolledUp = true;
+let openFiles = new Set();
+let selectedNode = null;
+let selectedIds = new Set();
+let graphView = 'default';
+
+const canned = [
+  {k:/external|service|api|call/i, r:"This repo has a few calls_external edges — dashed amber ones are flagged needs_review because a literal/const-prop pass couldn't resolve the target. Click the edge's function node, or the \"needs review\" line in the sidebar, for details."},
+  {k:/review|flag/i, r:"needs_review means the call's target couldn't be traced to a string literal statically. In the full peach pipeline that's where Joern/SLM escalation would kick in — this build stops short of that and just flags it."},
+  {k:/config/i, r:"Config matches come from cross-referencing resolved hosts against yaml/json/.env/Dockerfiles found in the repo."},
+  {k:/semantic|flowchart|flow chart|natural language/i, r:"The Semantic view is a static preview — in the full product an SLM generates this narrative live from the graph. Right now it's a deterministic rendering of the same data."},
+  {k:/hi|hello|hey/i, r:"Hey! I'm a static preview assistant for now — no live model behind me yet. Try exploring the graph, or ask about external calls or review flags."},
 ];
+function defaultReply(){return "I'm just a static preview response for now — the real RAG assistant isn't wired up in this build. Try the graph's isolate, rollup and semantic-view tools on the left to explore the repo instead.";}
 
-const stagesEl = document.getElementById('stages');
-STAGES.forEach((s, i) => {
-  const chip = document.createElement('div');
-  chip.className = 'stage-chip';
-  chip.id = 'stage-' + i;
-  chip.innerHTML = `<span class="dot"></span>${s}`;
-  stagesEl.appendChild(chip);
-});
+const NS="http://www.w3.org/2000/svg";
 
-function setStage(i, state) {
-  // state: 'active' marks i active and everything before it 'done'
-  for (let j = 0; j < STAGES.length; j++) {
-    const chip = document.getElementById('stage-' + j);
-    chip.classList.remove('active', 'done');
-    if (j < i) chip.classList.add('done');
-    else if (j === i && state === 'active') chip.classList.add('active');
-    else if (j === i && state === 'done') chip.classList.add('done');
-  }
+/* ---------- node type normalization ----------
+   The backend's node "type" field is the raw definition kind coming out of
+   the parser — "function", "method", "class", "module_scope" for defs,
+   "external_service" for external calls, "file" and "config" for the
+   other two. The graph UI only draws four visual buckets (file / function /
+   external / config), so nodeGroup() maps every raw type onto one of
+   those instead of assuming n.type already is one. typeLabel() is the
+   inverse direction: a human-readable label for the raw type, used in the
+   node detail panel where the finer distinction (method vs class) is
+   actually useful to show. */
+function nodeGroup(n){
+  const t=n&&n.type;
+  if(t==="file") return "file";
+  if(t==="config") return "config";
+  if(t==="external_service"||t==="external") return "external";
+  return "function"; // function, method, class, module_scope, anything else
 }
-function allDone() {
-  STAGES.forEach((_, j) => {
-    document.getElementById('stage-' + j).classList.remove('active');
-    document.getElementById('stage-' + j).classList.add('done');
-  });
-}
-function resetStages() {
-  STAGES.forEach((_, j) => {
-    const chip = document.getElementById('stage-' + j);
-    chip.classList.remove('active', 'done');
-  });
+function typeLabel(t){
+  const known={file:"File",function:"Function",method:"Method",class:"Class",
+    module_scope:"Module scope",external_service:"External service",
+    external:"External service",config:"Config file"};
+  if(known[t]) return known[t];
+  return t ? t.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase()) : "Node";
 }
 
-const form = document.getElementById('repo-form');
-const input = document.getElementById('repo-url');
-const btn = document.getElementById('submit-btn');
-const errorBanner = document.getElementById('error-banner');
-const hero = document.getElementById('hero');
-const placeholder = document.getElementById('placeholder');
-const networkDiv = document.getElementById('network');
-const statsDiv = document.getElementById('stats');
-const detailDiv = document.getElementById('detail-panel');
-const exportBtn = document.getElementById('export-btn');
-const rollupFilesToggle = document.getElementById('rollup-files-toggle');
-const rollupServicesToggle = document.getElementById('rollup-services-toggle');
-const isolateBtn = document.getElementById('isolate-btn');
-const exitIsolateBtn = document.getElementById('exit-isolate-btn');
-const exportIsolatedBtn = document.getElementById('export-isolated-btn');
-const isolateBanner = document.getElementById('isolate-banner');
-const isolateBannerText = document.getElementById('isolate-banner-text');
-const selectionCountEl = document.getElementById('selection-count');
-const hopValueEl = document.getElementById('hop-value');
-const hopMinusBtn = document.getElementById('hop-minus');
-const hopPlusBtn = document.getElementById('hop-plus');
-const ragBadge = document.getElementById('rag-badge');
-const ragBadgeText = document.getElementById('rag-badge-text');
-const chatToggle = document.getElementById('chat-toggle');
-const chatPanel = document.getElementById('chat-panel');
-const chatClose = document.getElementById('chat-close');
-const chatLog = document.getElementById('chat-log');
-const chatEmpty = document.getElementById('chat-empty');
-const chatInput = document.getElementById('chat-input');
-const chatSend = document.getElementById('chat-send');
-const chatRepoTag = document.getElementById('chat-repo-tag');
-
-let currentRunId = null;
-let ragPollTimer = null;
-
-// ---- pure data-transform layer -------------------------------------------
-// Node/edge shaping for rollup + isolate. Verified independently against a
-// synthetic graph fixture (aggregation counts, dropped self-loops from
-// rollup-induced containment edges, per-file/per-pattern drill-down
-// isolation, and — the one real bug that testing caught — hop-expansion
-// that must check membership against a frozen frontier snapshot rather
-// than the accumulator being built, or it silently over-expands depending
-// on edge array order) before being wired into the UI below.
-
-function computeView(graph, viewState) {
-  const nodesById = new Map(graph.nodes.map(n => [n.id, n]));
-  const idToViewId = new Map();
-
-  // 1. Decide each real node's view id.
-  for (const n of graph.nodes) {
-    let viewId = n.id;
-    if (viewState.rollupFiles &&
-        (n.type === 'function' || n.type === 'method' || n.type === 'class' || n.type === 'module_scope') &&
-        n.file && !viewState.expandedFiles.has(n.file)) {
-      viewId = 'file:' + n.file;
-    } else if (viewState.rollupServices &&
-               n.type === 'external_service' &&
-               !viewState.expandedServicePatterns.has(n.pattern || 'unknown')) {
-      viewId = 'svc:' + (n.pattern || 'unknown');
-    }
-    idToViewId.set(n.id, viewId);
-  }
-
-  // 2. Build view nodes, merging members into their group's view id.
-  const viewNodes = new Map(); // viewId -> node
-  for (const n of graph.nodes) {
-    const viewId = idToViewId.get(n.id);
-    if (viewId === n.id) {
-      if (!viewNodes.has(viewId)) {
-        viewNodes.set(viewId, { ...n, _members: [n.id], _rolled_up: false });
-      }
-      continue;
-    }
-    let group = viewNodes.get(viewId);
-    if (!group) {
-      if (nodesById.has(viewId)) {
-        // File-rollup case: the group IS a real node (the file itself),
-        // which may not have been visited yet in iteration order.
-        const seed = nodesById.get(viewId);
-        group = { ...seed, _members: [seed.id], _rolled_up: false };
-      } else {
-        // Service-rollup case: synthetic group node, no real backing id.
-        group = {
-          id: viewId, label: n.pattern || 'unknown', type: 'external_service',
-          group: 'external_service', pattern: n.pattern || null,
-          _members: [], _rolled_up: false, _synthetic: true,
-        };
-      }
-      viewNodes.set(viewId, group);
-    }
-    if (!group._members.includes(n.id)) group._members.push(n.id);
-  }
-  // Finalize labels/flags for anything that actually absorbed >1 real node.
-  for (const g of viewNodes.values()) {
-    const hiddenCount = g._members.length - (g._synthetic ? 0 : 1);
-    if (hiddenCount > 0) {
-      g._rolled_up = true;
-      const base = g._baseLabel || g.label;
-      g._baseLabel = base;
-      g.label = g._synthetic ? `${base} (${g._members.length})` : `${base} (${hiddenCount})`;
-    }
-  }
-
-  // 3. Redirect + aggregate edges onto view ids.
-  const viewEdges = new Map(); // key -> edge
-  for (const e of graph.edges) {
-    const from = idToViewId.get(e.from);
-    const to = idToViewId.get(e.to);
-    if (from === undefined || to === undefined) continue; // dangling ref, skip
-    if (from === to) continue; // rollup-induced self loop, meaningless
-
-    const key = `${from}|${to}|${e.kind}`;
-    let agg = viewEdges.get(key);
-    if (!agg) {
-      agg = { ...e, from, to, _count: 1, _members: [e] };
-      viewEdges.set(key, agg);
-    } else {
-      agg._count += 1;
-      agg._members.push(e);
-      if (e.needs_review) agg.needs_review = true;
-      if (e.review_reason && agg.review_reason !== e.review_reason) {
-        const seen = new Set((agg._review_reasons || [agg.review_reason]).filter(Boolean));
-        seen.add(e.review_reason);
-        agg._review_reasons = [...seen];
-      }
-    }
-  }
-
-  return { nodes: [...viewNodes.values()], edges: [...viewEdges.values()] };
-}
-
-// Expand `seedIds` by `hops` hops over `viewEdges`. Each round only looks
-// at the *previous* round's frontier — never the accumulator being built —
-// so a node discovered partway through a pass can't leak into that same
-// pass's hop count depending on edge array order.
-function expandHops(viewEdges, seedIds, hops) {
-  let frontier = new Set(seedIds);
-  const out = new Set(seedIds);
-  for (let h = 0; h < hops; h++) {
-    const next = new Set();
-    for (const e of viewEdges) {
-      if (frontier.has(e.from) && !out.has(e.to)) next.add(e.to);
-      if (frontier.has(e.to) && !out.has(e.from)) next.add(e.from);
-    }
-    if (next.size === 0) break;
-    for (const id of next) out.add(id);
-    frontier = next;
-  }
-  return out;
-}
-
-function isolateView(view, keepIds) {
-  const nodes = view.nodes.filter(n => keepIds.has(n.id));
-  const edges = view.edges.filter(e => keepIds.has(e.from) && keepIds.has(e.to));
-  return { nodes, edges };
-}
-
-
-
-let network = null;
-let simTimer = null;
-let currentGraph = null;   // the full {nodes, edges, meta} last rendered, for export
-let currentRepoUrl = '';
-
-const TYPE_COLOR = {
-  file: getVar('--c-file'), function: getVar('--c-func'), method: getVar('--c-method'),
-  class: getVar('--c-class'), module_scope: getVar('--c-module'),
-  external_service: getVar('--c-ext'), config: getVar('--c-cfg'),
-};
-function getVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
-
-const TYPE_SHAPE = {
-  file: 'box', function: 'dot', method: 'dot', class: 'diamond',
-  module_scope: 'dot', external_service: 'triangle', config: 'square',
-};
-
-// ---- rollup / drill-down / isolate state ----------------------------------
-// currentGraph (set in renderGraph) is always the untouched server response
-// and is what "Export full graph" reads from, regardless of view state.
-// currentView is whatever computeView()/isolateView() last produced and is
-// what's actually on screen — it's what "Export isolated graph" reads from.
-const viewState = {
-  rollupFiles: false,
-  rollupServices: false,
-  expandedFiles: new Set(),           // file paths drilled into despite rollupFiles
-  expandedServicePatterns: new Set(), // patterns drilled into despite rollupServices
-  isolate: null,                      // null | Set of currently-isolated view-node ids
-};
-let currentView = null;
-let hopDepth = 1;
-
-function freshViewState() {
-  viewState.rollupFiles = false;
-  viewState.rollupServices = false;
-  viewState.expandedFiles = new Set();
-  viewState.expandedServicePatterns = new Set();
-  viewState.isolate = null;
-  rollupFilesToggle.checked = false;
-  rollupServicesToggle.checked = false;
-}
-
-function rebuildNetwork() {
-  if (!currentGraph) return;
-  let view = computeView(currentGraph, viewState);
-  if (viewState.isolate) {
-    view = isolateView(view, viewState.isolate);
-  }
-  currentView = view;
-
-  const nodes = new vis.DataSet(view.nodes.map(n => ({
-    id: n.id,
-    label: n.label,
-    shape: TYPE_SHAPE[n.type] || 'dot',
-    color: {
-      background: TYPE_COLOR[n.type] || '#888',
-      border: n._rolled_up ? 'rgba(255,148,98,.6)' : 'rgba(0,0,0,.35)',
-      highlight: { background: TYPE_COLOR[n.type] || '#888', border: '#fff' },
-    },
-    font: { color: '#F2EAE0', size: 12, face: 'IBM Plex Mono' },
-    size: n.type === 'file' ? (n._rolled_up ? 20 : 16) : (n.type === 'external_service' ? (n._rolled_up ? 19 : 15) : 10),
-    borderWidth: n._rolled_up ? 2.5 : 1,
-    shapeProperties: { borderDashes: n._rolled_up ? [3, 2] : false },
-    raw: n,
-  })));
-
-  const edgeColor = {
-    contains: 'rgba(151,138,124,0.25)',
-    imports: 'rgba(143,166,201,0.45)',
-    calls: 'rgba(143,191,138,0.55)',
-    calls_external: 'rgba(224,138,92,0.75)',
-    configured_in: 'rgba(217,201,122,0.75)',
-  };
-  const REVIEW_COLOR = getVar('--c-review');
-  const edges = new vis.DataSet(view.edges.map((e, i) => ({
-    id: i,
-    from: e.from,
-    to: e.to,
-    label: e._count > 1 ? `×${e._count}` : undefined,
-    font: e._count > 1 ? { color: getVar('--text-faint'), size: 10, face: 'IBM Plex Mono', strokeWidth: 0 } : undefined,
-    color: { color: e.needs_review ? REVIEW_COLOR : (edgeColor[e.kind] || 'rgba(255,255,255,0.15)') },
-    dashes: e.needs_review ? [4, 3] : (e.kind === 'configured_in' || e.kind === 'imports'),
-    arrows: e.kind === 'contains' ? '' : 'to',
-    width: e.kind === 'calls_external' ? 1.6 : 1,
-    smooth: { type: 'continuous' },
-    raw: e,
-  })));
-
-  if (network) network.destroy();
-  network = new vis.Network(networkDiv, { nodes, edges }, {
-    physics: {
-      solver: 'forceAtlas2Based',
-      forceAtlas2Based: { gravitationalConstant: -60, springLength: 90, springConstant: 0.06, avoidOverlap: 0.4 },
-      stabilization: { iterations: 150 },
-    },
-    interaction: { hover: true, tooltipDelay: 120, multiselect: true },
-    layout: { improvedLayout: view.nodes.length < 800 },
-  });
-
-  network.on('stabilizationIterationsDone', function () {
-    network.setOptions({ physics: false });
-  });
-
-  network.on('click', (params) => {
-    if (params.nodes.length) {
-      const n = nodes.get(params.nodes[0]);
-      showDetail(n.raw, currentView);
-    }
-    updateSelectionUI();
-  });
-
-  network.on('doubleClick', (params) => {
-    if (!params.nodes.length) return;
-    const n = nodes.get(params.nodes[0]).raw;
-    if (n._rolled_up) toggleDrill(n, true);
-  });
-
-  network.on('deselectNode', updateSelectionUI);
-
-  updateSelectionUI();
-  refreshIsolateControls();
-  renderStats(currentGraph, currentView);
-}
-
-// Drill a single rolled-up node open (expand=true) or fold an individually
-// expanded one back into its group (expand=false).
-function toggleDrill(n, expand) {
-  if (n._synthetic) {
-    // Service-pattern group: drilling in reveals every real service with
-    // that pattern; folding removes the pattern from the expanded set.
-    const key = n.pattern || 'unknown';
-    if (expand) viewState.expandedServicePatterns.add(key);
-    else viewState.expandedServicePatterns.delete(key);
-  } else if (n.type === 'file') {
-    // File nodes always carry `path` from the backend (_build_graph sets
-    // it on every file node), so this is always present, not a fallback.
-    if (expand) viewState.expandedFiles.add(n.path);
-    else viewState.expandedFiles.delete(n.path);
-  }
-  viewState.isolate = null; // an expand/collapse changes which ids exist; drop any stale isolation
-  rebuildNetwork();
-}
-
-function updateSelectionUI() {
-  const sel = network ? network.getSelectedNodes() : [];
-  selectionCountEl.textContent = sel.length;
-  isolateBtn.disabled = sel.length === 0;
-}
-
-function setHopDepth(v) {
-  hopDepth = Math.max(0, Math.min(5, v));
-  hopValueEl.textContent = hopDepth;
-}
-hopMinusBtn.addEventListener('click', () => setHopDepth(hopDepth - 1));
-hopPlusBtn.addEventListener('click', () => setHopDepth(hopDepth + 1));
-
-rollupFilesToggle.addEventListener('change', () => {
-  viewState.rollupFiles = rollupFilesToggle.checked;
-  viewState.isolate = null; // node-id set changes under rollup; stale isolation would reference ids that no longer exist
-  rebuildNetwork();
-});
-rollupServicesToggle.addEventListener('change', () => {
-  viewState.rollupServices = rollupServicesToggle.checked;
-  viewState.isolate = null;
-  rebuildNetwork();
-});
-
-isolateBtn.addEventListener('click', () => {
-  if (!network || !currentView) return;
-  const selected = network.getSelectedNodes();
-  if (!selected.length) return;
-  const seed = new Set(selected);
-  viewState.isolate = hopDepth > 0 ? expandHops(currentView.edges, seed, hopDepth) : seed;
-  rebuildNetwork();
-});
-exitIsolateBtn.addEventListener('click', () => {
-  viewState.isolate = null;
-  rebuildNetwork();
-});
-
-function refreshIsolateControls() {
-  const active = !!viewState.isolate;
-  exitIsolateBtn.disabled = !active;
-  exportIsolatedBtn.disabled = !active;
-  isolateBanner.classList.toggle('active', active);
-  if (active && currentView) {
-    isolateBannerText.textContent =
-      `Isolated: ${currentView.nodes.length} node(s), ${currentView.edges.length} edge(s)`;
-  }
-}
-
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const url = input.value.trim();
-  if (!url) return;
-  currentRepoUrl = url;
-
-  resetRagAndChat();
-
-  errorBanner.style.display = 'none';
-  btn.disabled = true;
-  btn.textContent = 'Mapping…';
-  hero.classList.add('compact');
-  resetStages();
-  setStage(0, 'active');
-
-  // client-side stage animation while the backend does its thing —
-  // it's a synchronous request, so this is a best-effort visual pace
-  // that we snap to "done" the moment the real response lands.
-  let simIdx = 0;
-  simTimer = setInterval(() => {
-    simIdx = Math.min(simIdx + 1, STAGES.length - 1);
-    setStage(simIdx, 'active');
-  }, 700);
-
-  try {
-    const res = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ repo_url: url }),
+/* ---------- layout ---------- */
+function layout(nodes){
+  const groups={file:[],function:[],external:[],config:[]};
+  nodes.forEach(n=>groups[nodeGroup(n)].push(n));
+  const cx=480,cy=330;
+  const radii={file:120,function:230,external:340,config:400};
+  Object.keys(groups).forEach(t=>{
+    const arr=groups[t],r=radii[t];
+    arr.forEach((n,i)=>{
+      const a=(i/Math.max(arr.length,1))*Math.PI*2 + (t==="function"?0.3:0);
+      n.x=cx+r*Math.cos(a); n.y=cy+r*Math.sin(a);
     });
-    const data = await res.json();
-    clearInterval(simTimer);
+  });
+}
 
-    if (!res.ok) {
-      allDone();
-      errorBanner.textContent = data.error || 'Something went wrong.';
-      errorBanner.style.display = 'block';
+/* Fills in what the backend's graph.meta doesn't provide in the shape the
+   UI needs: a parent file id on every def node (backend gives a raw path
+   in n.file, not the "file:<path>" node id) and a counters summary object
+   (backend's meta has files_parsed/needs_review etc. as top-level scalars,
+   not a nested counters={files,functions,external,needs_review}). Safe to
+   call more than once on the same graph. */
+function normalizeGraph(graph){
+  graph.nodes.forEach(n=>{
+    if(!n.parent && n.file) n.parent = "file:"+n.file;
+  });
+  const counts={file:0,function:0,external:0,config:0};
+  graph.nodes.forEach(n=>{ counts[nodeGroup(n)]++; });
+  graph.meta = graph.meta || {};
+  graph.meta.counters = {
+    files: counts.file,
+    functions: counts.function,
+    external: counts.external,
+    needs_review: graph.edges.filter(e=>e.needs_review).length,
+  };
+  if(graph.meta.elapsed_s===undefined) graph.meta.elapsed_s = graph.meta.elapsed_seconds;
+  return graph;
+}
+
+/* ---------- dashboard ---------- */
+async function loadProjects(){
+  const res = await fetch("/api/projects");
+  const data = await res.json();
+  projects = data.projects.map(p=>{ normalizeGraph(p.graph); layout(p.graph.nodes); p.graph.nodes.forEach(n=>{n.incidents=n.incidents||[];}); return p; });
+  renderDash();
+}
+
+function renderDash(){
+  const grid=document.getElementById("projectGrid");
+  grid.innerHTML="";
+  projects.forEach(p=>{
+    const c=p.graph.meta.counters;
+    const el=document.createElement("div");
+    el.className="card pcard";
+    el.onclick=()=>openProject(p.id);
+    el.innerHTML=`<button class="delBtn" onclick="deleteProject('${p.id}',event)" title="Disconnect repo">✕</button>
+      <div class="name">${p.name}</div><div class="url">${p.url}</div>
+      <div class="statrow"><span><b>${c.files}</b> files</span><span><b>${c.functions}</b> functions</span><span><b>${c.needs_review}</b> flagged</span></div>`;
+    grid.appendChild(el);
+  });
+  const add=document.createElement("div");
+  add.className="card addcard"+(projects.length>=3?" disabled":"");
+  add.onclick=()=>{if(projects.length<3)openModal();};
+  add.innerHTML=`<div class="plus">+</div><div>Connect repo</div><div class="limitNote">${projects.length}/3 connected</div>`;
+  grid.appendChild(add);
+}
+
+async function deleteProject(id, ev){
+  ev.stopPropagation();
+  if(!confirm("Disconnect this repo? This can't be undone.")) return;
+  await fetch("/api/projects/"+id, {method:"DELETE"});
+  projects = projects.filter(p=>p.id!==id);
+  renderDash();
+}
+
+function openModal(){document.getElementById("overlay").classList.add("active");document.getElementById("progress").className="progress";document.getElementById("progress").innerHTML="";document.getElementById("repoInput").value="";document.getElementById("dashErr").style.display="none";}
+function closeModal(){document.getElementById("overlay").classList.remove("active");}
+
+async function runConnect(){
+  const val=document.getElementById("repoInput").value.trim();
+  if(!val)return;
+  const btn=document.getElementById("mapBtn");btn.disabled=true;
+  const steps=["Shallow cloning repo…","Structural parse (ast / regex pass)…","Internal symbol resolution…","External-call pattern match…","Literal & const-prop check…","Config cross-reference…","Rendering graph…"];
+  const box=document.getElementById("progress");box.className="progress active";box.innerHTML="";
+  let i=0;
+  const timer=setInterval(()=>{
+    if(i>0 && box.children[i-1]) box.children[i-1].classList.add("done");
+    if(i<steps.length){const d=document.createElement("div");d.className="pstep";d.textContent=steps[i];box.appendChild(d);i++;}
+  },380);
+
+  try{
+    const res = await fetch("/api/connect", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({repo_url: val})});
+    const data = await res.json();
+    clearInterval(timer);
+    Array.from(box.children).forEach(c=>c.classList.add("done"));
+    if(!res.ok){
+      const err=document.getElementById("dashErr");
+      err.textContent = data.error || "Could not analyze that repo.";
+      err.style.display="block";
+      btn.disabled=false;
       return;
     }
-    allDone();
-    renderGraph(data);
-    startRagPolling(data.meta && data.meta.run_id);
-  } catch (err) {
-    clearInterval(simTimer);
-    allDone();
-    errorBanner.textContent = 'Network error talking to the analyzer: ' + err.message;
-    errorBanner.style.display = 'block';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Map it';
+    normalizeGraph(data.project.graph);
+    layout(data.project.graph.nodes);
+    data.project.graph.nodes.forEach(n=>{n.incidents=[];});
+    projects.push(data.project);
+    setTimeout(()=>{closeModal();btn.disabled=false;renderDash();openProject(data.project.id);},300);
+    }catch(e){
+      clearInterval(timer);
+      const err=document.getElementById("dashErr");
+      err.textContent = (e instanceof TypeError && e.message.includes("fetch"))
+        ? "Network error reaching the server."
+        : "Something went wrong rendering the result: " + e.message;
+      err.style.display="block";
+      btn.disabled=false;
+      console.error(e);
+    }
+}
+
+/* ---------- crumb / nav ---------- */
+function setCrumb(projectName){
+  const el=document.getElementById("crumb");
+  if(projectName) el.innerHTML = `<span class="crumbLink" onclick="setRole('user')">Dashboard</span> / ${projectName}`;
+  else el.textContent = "Dashboard";
+}
+function showView(name){
+  ["dash","admin"].forEach(v=>document.getElementById("view-"+v).classList.remove("active"));
+  document.getElementById("view-graph").classList.remove("active");
+  if(name==="graph") document.getElementById("view-graph").classList.add("active");
+  else document.getElementById("view-"+name).classList.add("active");
+}
+async function setRole(role){
+  document.getElementById("roleUserBtn").classList.toggle("active",role==="user");
+  document.getElementById("roleAdminBtn").classList.toggle("active",role==="admin");
+  if(role==="admin"){ await renderAdmin(); showView("admin"); document.getElementById("crumb").textContent="Admin"; }
+  else { showView("dash"); setCrumb(null); renderDash(); }
+}
+
+/* ---------- graph screen ---------- */
+function openProject(id){
+  activeProject=projects.find(p=>p.id===id);
+  isolateId=null;reviewIsolateActive=false;rolledUp=true;selectedNode=null;openFiles=new Set();selectedIds=new Set();
+  setCrumb(activeProject.name);
+  showView("graph");
+  document.getElementById("rollupLbl").textContent="Drill down (show functions)";
+  closePanel(); closeSelPopup();
+  setGraphView('default');
+  renderDiag();
+  drawGraph();
+  renderAnnotList();
+}
+function renderDiag(){
+  const c=activeProject.graph.meta.counters;
+  document.getElementById("diagBox").innerHTML=
+    `<div style="font-size:12px;color:var(--ink-soft);line-height:1.6;margin-bottom:6px;">${c.files} files · ${c.functions} functions<br>${c.external} external services<br>run ${activeProject.graph.meta.run} · ${activeProject.graph.meta.elapsed_s}s</div>
+     <button class="reviewLine" onclick="isolateReview()">⚠ ${c.needs_review} edge${c.needs_review===1?'':'s'} need review</button>`;
+}
+
+function visibleNodes(){
+  let ns=activeProject.graph.nodes;
+  if(rolledUp) ns=ns.filter(n=>nodeGroup(n)!=="function" || openFiles.has(n.parent));
+  return ns;
+}
+function toggleRollup(){
+  rolledUp=!rolledUp;
+  document.getElementById("rollupLbl").textContent = rolledUp?"Drill down (show functions)":"Roll up (hide functions)";
+  if(!rolledUp){ activeProject.graph.nodes.filter(n=>n.type==="file").forEach(f=>openFiles.add(f.id)); }
+  else openFiles.clear();
+  drawGraph();
+}
+function clearIsolate(){isolateId=null;reviewIsolateActive=false;drawGraph();}
+function isolateNode(id){ isolateId = isolateId===id? null : id; reviewIsolateActive=false; drawGraph(); if(selectedNode) selectNode(selectedNode); }
+function isolateReview(){ reviewIsolateActive=!reviewIsolateActive; isolateId=null; drawGraph(); }
+
+/* ---------- coordinate helpers ---------- */
+function toSvgCoords(evt){
+  const svg=document.getElementById("g");
+  const pt=svg.createSVGPoint();
+  pt.x=evt.clientX; pt.y=evt.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+
+/* ---------- node dragging ---------- */
+let dragNode=null, dragMoved=false, dragStart=null;
+function nodePointerDown(n, ev){
+  ev.stopPropagation();
+  dragNode=n; dragMoved=false;
+  dragStart=toSvgCoords(ev);
+  document.addEventListener("pointermove", onNodeDrag);
+  document.addEventListener("pointerup", onNodeUp);
+}
+function onNodeDrag(ev){
+  if(!dragNode) return;
+  const p=toSvgCoords(ev);
+  if(Math.abs(p.x-dragStart.x)>2||Math.abs(p.y-dragStart.y)>2) dragMoved=true;
+  dragNode.x=p.x; dragNode.y=p.y;
+  drawGraph();
+}
+function onNodeUp(){
+  document.removeEventListener("pointermove", onNodeDrag);
+  document.removeEventListener("pointerup", onNodeUp);
+  const n=dragNode, moved=dragMoved;
+  dragNode=null; dragMoved=false;
+  if(n && !moved) selectNode(n);
+}
+
+/* ---------- rectangle selection ---------- */
+let selecting=false, selStart=null, selRectEl=null;
+function bgPointerDown(ev){
+  selecting=true;
+  selStart=toSvgCoords(ev);
+  selRectEl=document.createElementNS(NS,"rect");
+  selRectEl.setAttribute("class","selrect");
+  document.getElementById("g").appendChild(selRectEl);
+  document.addEventListener("pointermove", onSelMove);
+  document.addEventListener("pointerup", onSelUp);
+  closePanel();
+}
+function onSelMove(ev){
+  if(!selecting) return;
+  const p=toSvgCoords(ev);
+  const x=Math.min(p.x,selStart.x), y=Math.min(p.y,selStart.y);
+  const w=Math.abs(p.x-selStart.x), h=Math.abs(p.y-selStart.y);
+  selRectEl.setAttribute("x",x); selRectEl.setAttribute("y",y);
+  selRectEl.setAttribute("width",w); selRectEl.setAttribute("height",h);
+}
+function onSelUp(){
+  document.removeEventListener("pointermove", onSelMove);
+  document.removeEventListener("pointerup", onSelUp);
+  selecting=false;
+  const x=parseFloat(selRectEl.getAttribute("x")||0), y=parseFloat(selRectEl.getAttribute("y")||0);
+  const w=parseFloat(selRectEl.getAttribute("width")||0), h=parseFloat(selRectEl.getAttribute("height")||0);
+  if(selRectEl.parentNode) selRectEl.remove();
+  if(w<4 && h<4) return;
+  const hit=visibleNodes().filter(n=> n.x>=x && n.x<=x+w && n.y>=y && n.y<=y+h);
+  if(hit.length===0) return;
+  selectedIds=new Set(hit.map(n=>n.id));
+  drawGraph();
+  openSelPopup(hit.length);
+}
+
+/* ---------- draw ---------- */
+function drawGraph(){
+  const svg=document.getElementById("g");
+  svg.innerHTML="";
+  svg.setAttribute("viewBox","0 0 960 660");
+  const defs=document.createElementNS(NS,"defs");
+  defs.innerHTML=`<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B6055"/></marker>`;
+  svg.appendChild(defs);
+
+  const bg=document.createElementNS(NS,"rect");
+  bg.setAttribute("x",0);bg.setAttribute("y",0);bg.setAttribute("width",960);bg.setAttribute("height",660);
+  bg.setAttribute("fill","transparent");
+  bg.addEventListener("pointerdown", bgPointerDown);
+  svg.appendChild(bg);
+
+  const nodes=visibleNodes();
+  const idset=new Set(nodes.map(n=>n.id));
+  let neighborSet=null;
+  if(reviewIsolateActive){
+    neighborSet=new Set();
+    activeProject.graph.edges.forEach(e=>{ if(e.needs_review){neighborSet.add(e.from);neighborSet.add(e.to);} });
+  } else if(isolateId){
+    neighborSet=new Set([isolateId]);
+    activeProject.graph.edges.forEach(e=>{if(e.from===isolateId)neighborSet.add(e.to);if(e.to===isolateId)neighborSet.add(e.from);});
   }
-});
 
-function renderGraph(data) {
-  placeholder.style.display = 'none';
-  networkDiv.style.display = 'block';
-
-  currentGraph = data;
-  exportBtn.disabled = false;
-  freshViewState();
-  rebuildNetwork();
-}
-
-function renderStats(graph, view) {
-  const counts = {};
-  graph.nodes.forEach(n => counts[n.type] = (counts[n.type] || 0) + 1);
-  const kindCounts = {};
-  graph.edges.forEach(e => kindCounts[e.kind] = (kindCounts[e.kind] || 0) + 1);
-
-  let html = '';
-  html += row('Repo', graph.meta.repo);
-  html += row('Files parsed', graph.meta.files_parsed);
-  html += row('Config files seen', graph.meta.config_files);
-  html += row('Analysis time', graph.meta.elapsed_seconds + 's');
-  html += `<div style="height:8px"></div>`;
-  html += row('Functions/methods', (counts.function || 0) + (counts.method || 0));
-  html += row('Classes', counts.class || 0);
-  html += row('External calls found', kindCounts.calls_external || 0);
-  html += row('→ resolved to config', graph.edges.filter(e => e.kind === 'configured_in').length);
-  html += `<div style="height:8px"></div>`;
-  html += row('Escalated to Joern', graph.meta.joern_escalated ?? 0);
-  html += row('→ resolved by Joern', graph.meta.joern_resolved ?? 0);
-  html += row('Sent to SLM fallback', graph.meta.llm_fallback_used ?? 0);
-  html += row('→ resolved by SLM', graph.meta.llm_resolved ?? 0);
-  html += row('⚠ needs review', graph.meta.needs_review ?? 0);
-  if (view && (view.nodes.length !== graph.nodes.length || view.edges.length !== graph.edges.length)) {
-    html += `<div style="height:8px"></div>`;
-    html += row('Showing (current view)', `${view.nodes.length} nodes / ${view.edges.length} edges`);
-  }
-  statsDiv.innerHTML = html;
-
-  function row(label, val) {
-    return `<div class="stat-row"><span>${label}</span><b>${val}</b></div>`;
-  }
-}
-
-function slugFromRepoUrl(url) {
-  const cleaned = (url || 'graph').replace(/\.git$/i, '').replace(/\/+$/, '');
-  const tail = cleaned.split('/').slice(-2).join('-') || cleaned;
-  return tail.replace(/[^\w.-]+/g, '_').replace(/^_+|_+$/g, '') || 'graph';
-}
-
-function downloadJSON(payload, suffix) {
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const objectUrl = URL.createObjectURL(blob);
-  const ts = new Date().toISOString().replace(/[:.]/g, '-');
-
-  const a = document.createElement('a');
-  a.href = objectUrl;
-  a.download = `peach-graph_${slugFromRepoUrl(currentRepoUrl)}_${suffix}_${ts}.json`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(objectUrl);
-}
-
-function exportGraphJSON() {
-  if (!currentGraph) return;
-
-  // Export exactly what the server returned: every node and edge, plus the
-  // run meta (stage stats, escalation counts) so the file is
-  // self-describing without needing the dashboard open alongside it. This
-  // is unaffected by rollup/isolate view state — it's always the full graph.
-  const payload = {
-    nodes: currentGraph.nodes,
-    edges: currentGraph.edges,
-    meta: currentGraph.meta,
-    exported_at: new Date().toISOString(),
-  };
-  downloadJSON(payload, 'full');
-}
-
-function exportIsolatedJSON() {
-  if (!currentView || !viewState.isolate) return;
-
-  // Export exactly what's on screen in the isolated view — including any
-  // active rollup. Rolled-up nodes keep `_members`/`_baseLabel` so the
-  // underlying real node/edge ids stay traceable back to the full graph
-  // rather than being silently flattened away.
-  const payload = {
-    nodes: currentView.nodes,
-    edges: currentView.edges,
-    meta: {
-      ...currentGraph.meta,
-      isolated: true,
-      isolated_from_full_graph: true,
-      view_state: {
-        rollup_files: viewState.rollupFiles,
-        rollup_services: viewState.rollupServices,
-        hop_depth_used: hopDepth,
-      },
-    },
-    exported_at: new Date().toISOString(),
-  };
-  downloadJSON(payload, 'isolated');
-}
-
-exportBtn.addEventListener('click', exportGraphJSON);
-exportIsolatedBtn.addEventListener('click', exportIsolatedJSON);
-
-function showDetail(n, view) {
-  let html = `<div class="d-title">${escapeHtml(n.label)}</div>`;
-  html += drow('type', n.type);
-  if (n.file) html += drow('file', n.file);
-  if (n.path) html += drow('path', n.path);
-  if (n.line) html += drow('line', n.line);
-  if (n.pattern) html += drow('client pattern', n.pattern);
-  if (n._rolled_up) html += drow('contains', `${n._members.length}${n._synthetic ? '' : ' (incl. itself)'} node(s)`);
-
-  const incoming = view.edges.filter(e => e.to === n.id);
-  const outgoing = view.edges.filter(e => e.from === n.id);
-  html += `<div style="height:10px"></div><div class="d-title" style="font-size:11px;">connections</div>`;
-  html += drow('incoming', incoming.length);
-  html += drow('outgoing', outgoing.length);
-
-  const extOut = outgoing.filter(e => e.kind === 'calls_external');
-  if (extOut.length) {
-    html += `<div style="height:8px"></div>`;
-    extOut.forEach(e => {
-      const flag = e.needs_review ? ' ⚠' : '';
-      const count = e._count > 1 ? ` ×${e._count}` : '';
-      html += `<div class="d-row"><span>${e.method || 'candidate'}${flag}${count}</span><span>${e.to.replace('ext:','').replace('svc:','')}</span></div>`;
-      const reasons = e._review_reasons || (e.review_reason ? [e.review_reason] : []);
-      if (e.needs_review && reasons.length) {
-        html += `<div class="empty-hint" style="margin:2px 0 6px; color:var(--c-review);">${escapeHtml(reasons.join(' | '))}</div>`;
-      }
-    });
-  }
-
-  html += `<div style="height:10px"></div>`;
-  if (n._rolled_up) {
-    html += `<button type="button" class="drill-btn" id="detail-drill-btn">⊕ Drill down</button>`;
-  } else if ((n.type === 'file' && viewState.rollupFiles && viewState.expandedFiles.has(n.path)) ||
-             (n.type === 'external_service' && viewState.rollupServices &&
-              viewState.expandedServicePatterns.has(n.pattern || 'unknown'))) {
-    html += `<button type="button" class="drill-btn" id="detail-collapse-btn">⊖ Collapse back</button>`;
-  }
-  html += `<button type="button" class="drill-btn" id="detail-isolate-btn">◉ Isolate + ${hopDepth} hop(s)</button>`;
-
-  detailDiv.innerHTML = html;
-
-  const drillBtn = document.getElementById('detail-drill-btn');
-  if (drillBtn) drillBtn.addEventListener('click', () => toggleDrill(n, true));
-  const collapseBtn = document.getElementById('detail-collapse-btn');
-  if (collapseBtn) collapseBtn.addEventListener('click', () => toggleDrill(n, false));
-  const isoBtn = document.getElementById('detail-isolate-btn');
-  if (isoBtn) isoBtn.addEventListener('click', () => {
-    const seed = new Set([n.id]);
-    viewState.isolate = hopDepth > 0 ? expandHops(currentView.edges, seed, hopDepth) : seed;
-    rebuildNetwork();
+  activeProject.graph.edges.forEach(e=>{
+    if(!idset.has(e.from)||!idset.has(e.to))return;
+    const a=nodes.find(n=>n.id===e.from),b=nodes.find(n=>n.id===e.to);
+    const line=document.createElementNS(NS,"line");
+    line.setAttribute("x1",a.x);line.setAttribute("y1",a.y);line.setAttribute("x2",b.x);line.setAttribute("y2",b.y);
+    let cls="edge"+(e.needs_review?" review":"");
+    if(neighborSet && !(neighborSet.has(e.from)&&neighborSet.has(e.to))) cls+=" dim";
+    line.setAttribute("class",cls);
+    line.setAttribute("marker-end","url(#arrow)");
+    svg.appendChild(line);
   });
 
-  function drow(k, v) {
-    return `<div class="d-row"><span>${k}</span><span>${escapeHtml(String(v))}</span></div>`;
-  }
-}
-
-function escapeHtml(s) {
-  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-// ---- RAG status polling + chat --------------------------------------------
-
-function resetRagAndChat() {
-  clearInterval(ragPollTimer);
-  ragPollTimer = null;
-  currentRunId = null;
-  ragBadge.className = 'rag-badge';
-  chatToggle.classList.remove('show');
-  chatPanel.classList.remove('open');
-  chatLog.innerHTML = '';
-  chatEmpty.style.display = '';
-  chatLog.appendChild(chatEmpty);
-}
-
-function startRagPolling(runId) {
-  if (!runId) return; // backend didn't return one — nothing to poll
-  currentRunId = runId;
-  ragBadge.classList.add('show', 'embedding');
-  ragBadgeText.textContent = 'Building knowledge base…';
-
-  clearInterval(ragPollTimer);
-  ragPollTimer = setInterval(() => pollRagStatus(runId), 1500);
-  pollRagStatus(runId); // don't wait for the first tick
-}
-
-async function pollRagStatus(runId) {
-  if (runId !== currentRunId) return; // a newer repo superseded this poll
-  try {
-    const res = await fetch('/api/rag-status/' + encodeURIComponent(runId));
-    const data = await res.json();
-    if (runId !== currentRunId) return; // response landed after a newer repo started
-
-    if (data.status === 'embedding' || data.status === 'starting') {
-      ragBadge.className = 'rag-badge show embedding';
-      ragBadgeText.textContent = data.chunks
-        ? `Building knowledge base… (${data.chunks} chunks)`
-        : 'Building knowledge base…';
-    } else if (data.status === 'ready') {
-      clearInterval(ragPollTimer);
-      ragBadge.className = 'rag-badge show ready';
-      ragBadgeText.textContent = `Knowledge base ready (${data.chunks} chunks)`;
-      chatToggle.classList.add('show');
-      chatRepoTag.textContent = slugFromRepoUrl(currentRepoUrl);
-      setTimeout(() => ragBadge.classList.remove('show'), 4000); // fade the badge once the chat button is up
-    } else if (data.status === 'error') {
-      clearInterval(ragPollTimer);
-      ragBadge.className = 'rag-badge show error';
-      ragBadgeText.textContent = 'Knowledge base failed to build';
+  nodes.forEach(n=>{
+    const g=document.createElementNS(NS,"g");
+    let cls="node"+(neighborSet && !neighborSet.has(n.id)?" dim":"")+(selectedIds.has(n.id)?" selected":"");
+    g.setAttribute("class",cls);
+    g.setAttribute("transform",`translate(${n.x},${n.y})`);
+    const grp=nodeGroup(n);
+    const r=grp==="file"?16:grp==="function"?11:grp==="external"?14:12;
+    if(n.note){
+      const ring=document.createElementNS(NS,"circle");
+      ring.setAttribute("class","ring"); ring.setAttribute("r",r+5);
+      g.appendChild(ring);
     }
-    // 'unknown' — status not yet written server-side; keep polling silently.
-  } catch (err) {
-    // transient network hiccup — keep polling, don't alarm the user over one miss
-  }
-}
-
-chatToggle.addEventListener('click', () => {
-  chatPanel.classList.add('open');
-  chatInput.focus();
-});
-chatClose.addEventListener('click', () => chatPanel.classList.remove('open'));
-
-function appendChatMsg(role, text) {
-  chatEmpty.style.display = 'none';
-  const div = document.createElement('div');
-  div.className = 'chat-msg ' + role;
-  div.textContent = text;
-  chatLog.appendChild(div);
-  chatLog.scrollTop = chatLog.scrollHeight;
-  return div;
-}
-
-function appendSources(container, sources) {
-  if (!sources || !sources.length) return;
-  const box = document.createElement('div');
-  box.className = 'sources';
-  sources.slice(0, 5).forEach(s => {
-    const chip = document.createElement('div');
-    chip.className = 'source-chip';
-    const loc = (s.start_line && s.end_line) ? `:${s.start_line}-${s.end_line}` : '';
-    chip.textContent = `${s.name || s.path || '?'} — ${s.path || ''}${loc}`;
-    box.appendChild(chip);
+    const circ=document.createElementNS(NS,"circle");
+    circ.setAttribute("class","main");
+    circ.setAttribute("r",r);
+    circ.setAttribute("fill","var(--"+({file:"file",function:"fn",external:"ext",config:"cfg"}[grp])+")");
+    g.appendChild(circ);
+    if(n.note){
+      const pin=document.createElementNS(NS,"circle");
+      pin.setAttribute("r",4.5);pin.setAttribute("cx",r-1);pin.setAttribute("cy",-r+1);pin.setAttribute("class","notepin");
+      g.appendChild(pin);
+      const pt=document.createElementNS(NS,"text");
+      pt.setAttribute("x",r-1);pt.setAttribute("y",-r+4.2);pt.setAttribute("text-anchor","middle");
+      pt.setAttribute("style","font-size:7px;fill:#241206;pointer-events:none;");
+      pt.textContent="!";
+      g.appendChild(pt);
+    }
+    const t=document.createElementNS(NS,"text");
+    t.setAttribute("y",r+11);t.setAttribute("text-anchor","middle");
+    t.textContent=n.label.length>16?n.label.slice(0,15)+"…":n.label;
+    g.appendChild(t);
+    g.addEventListener("pointerdown", ev=>nodePointerDown(n, ev));
+    if(n.type==="file"){
+      g.addEventListener("dblclick", ev=>{ ev.stopPropagation(); if(rolledUp){ openFiles.add(n.id); drawGraph(); } });
+    }
+    svg.appendChild(g);
   });
-  container.appendChild(box);
 }
 
-async function sendChatMessage() {
-  const text = chatInput.value.trim();
-  if (!text || !currentRunId) return;
-  chatInput.value = '';
-  chatInput.style.height = '38px';
-  chatSend.disabled = true;
+/* ---------- node info panel (movable) ---------- */
+function selectNode(n){
+  selectedNode=n;
+  const panel=document.getElementById("panel");
+  panel.classList.add("active");
+  document.getElementById("panelTitleText").textContent=n.label;
+  const inc=activeProject.graph.edges.filter(e=>e.to===n.id||e.from===n.id);
+  const typeLbl=typeLabel(n.type);
+  let reviewHtml="";
+  const reviewEdges=inc.filter(e=>e.needs_review && (e.from===n.id||e.to===n.id));
+  if(reviewEdges.length) reviewHtml=`<div class="reviewbox">⚠ ${reviewEdges.length} edge(s) flagged needs_review — ${reviewEdges[0].reason}</div>`;
+  const connLis=inc.map(e=>{
+    const otherId=e.from===n.id?e.to:e.from;
+    const other=activeProject.graph.nodes.find(x=>x.id===otherId);
+    return `<li onclick='selectFromList("${otherId}")'>${e.kind} → ${other?other.label:otherId}</li>`;
+  }).join("");
+  if(!n.incidents) n.incidents=[];
+  const incHtml = n.incidents.length ? n.incidents.map(i=>`<div class="incItem">${escapeHtml(i.text)}<time>${new Date(i.ts).toLocaleString()}</time></div>`).join("") : "<div style='font-size:11.5px;color:var(--ink-faint);'>No incident history yet.</div>";
+  document.getElementById("panelBody").innerHTML=`
+    <div class="tag">${typeLbl}</div>
+    ${n.parent?`<div class="row"><b>File</b> ${activeProject.graph.nodes.find(x=>x.id===n.parent).label}</div>`:""}
+    ${n.line?`<div class="row"><b>Line</b> ${n.line}</div>`:""}
+    ${reviewHtml}
+    <button class="toolbtn ${isolateId===n.id?'on':''}" style="margin-top:6px;" onclick='isolateNode("${n.id}")'>Isolate this node</button>
+    <div class="row" style="margin-top:8px;"><b>Connections (${inc.length})</b></div>
+    <ul class="connlist">${connLis||"<li style='cursor:default'>None visible</li>"}</ul>
 
-  appendChatMsg('user', text);
-  const pending = appendChatMsg('bot pending', 'Thinking…');
+    <div class="secTitle">Annotation (temporary)</div>
+    <textarea id="noteInput" placeholder="Add an annotation…">${n.note?escapeHtml(n.note):""}</textarea>
+    <button class="smallbtn" onclick='saveNote("${n.id}")'>Save annotation</button>
 
-  try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ run_id: currentRunId, message: text }),
-    });
-    const data = await res.json();
-    pending.classList.remove('pending');
-    if (!res.ok) {
-      pending.textContent = data.error || 'Something went wrong.';
-      return;
-    }
-    pending.textContent = data.answer;
-    appendSources(pending, data.sources);
-  } catch (err) {
-    pending.classList.remove('pending');
-    pending.textContent = 'Network error talking to the chatbot: ' + err.message;
-  } finally {
-    chatSend.disabled = false;
-  }
+    <div class="secTitle">Incident history</div>
+    ${incHtml}
+    <textarea id="incInput" placeholder="Log an incident or note on this node…" style="margin-top:6px;"></textarea>
+    <button class="smallbtn" onclick='addIncident("${n.id}")'>Add entry</button>
+    <div style="font-size:10.5px;color:var(--ink-faint);margin-top:5px;">Kept for this session only — the full product stores this permanently, linked to the node.</div>
+  `;
+}
+function escapeHtml(s){ const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+function selectFromList(id){
+  const n=activeProject.graph.nodes.find(x=>x.id===id);
+  if(n.parent && rolledUp && !openFiles.has(n.parent)){openFiles.add(n.parent);drawGraph();}
+  selectNode(n);
+}
+function saveNote(id){
+  const n=activeProject.graph.nodes.find(x=>x.id===id);
+  n.note=document.getElementById("noteInput").value;
+  drawGraph(); renderAnnotList();
+}
+function addIncident(id){
+  const n=activeProject.graph.nodes.find(x=>x.id===id);
+  const val=document.getElementById("incInput").value.trim();
+  if(!val) return;
+  if(!n.incidents) n.incidents=[];
+  n.incidents.push({text:val, ts:Date.now()});
+  selectNode(n);
+}
+function closePanel(){ document.getElementById("panel").classList.remove("active"); selectedNode=null; }
+
+/* ---------- annotations sidebar ---------- */
+function renderAnnotList(){
+  const box=document.getElementById("annotList");
+  if(!activeProject){ box.innerHTML=""; return; }
+  const annotated=activeProject.graph.nodes.filter(n=>n.note);
+  if(!annotated.length){ box.innerHTML="<div style='font-size:11.5px;color:var(--ink-faint);'>None yet.</div>"; return; }
+  box.innerHTML=annotated.map(n=>`<div class="annotItem" onclick='selectFromList("${n.id}")'><b>${n.label}</b><span>${escapeHtml(n.note)}</span></div>`).join("");
+}
+function clearAnnotations(){
+  if(!activeProject) return;
+  if(!confirm("Clear all annotations on this graph? Incident history is kept.")) return;
+  activeProject.graph.nodes.forEach(n=>{ n.note=""; });
+  drawGraph(); renderAnnotList();
+  if(selectedNode) selectNode(selectedNode);
 }
 
-chatSend.addEventListener('click', sendChatMessage);
-chatInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
+/* ---------- selection popup (movable + minimizable) ---------- */
+function openSelPopup(count){
+  const pop=document.getElementById("selPopup");
+  pop.classList.remove("minimized");
+  pop.classList.add("active");
+  document.getElementById("selCount").innerHTML=`<b>${count}</b> node(s) selected`;
+  document.getElementById("selNoteInput").value="";
+}
+function closeSelPopup(){
+  document.getElementById("selPopup").classList.remove("active");
+  selectedIds=new Set();
+  drawGraph();
+}
+function applyNoteToSelection(){
+  const val=document.getElementById("selNoteInput").value;
+  activeProject.graph.nodes.filter(n=>selectedIds.has(n.id)).forEach(n=>{ n.note=val; });
+  closeSelPopup();
+  renderAnnotList();
+}
+function toggleMinimize(id){
+  const el=document.getElementById(id);
+  el.classList.toggle("minimized");
+  const btn=document.getElementById("selMinBtn");
+  if(btn) btn.textContent = el.classList.contains("minimized") ? "▢" : "–";
+}
+
+/* ---------- draggable floating panels ---------- */
+function makeDraggable(panelEl, handleEl){
+  let dragging=false, offX=0, offY=0;
+  handleEl.addEventListener("pointerdown", e=>{
+    if(e.target.tagName==="BUTTON") return;
+    dragging=true;
+    const rect=panelEl.getBoundingClientRect();
+    const parentRect=panelEl.parentElement.getBoundingClientRect();
+    offX=e.clientX-rect.left; offY=e.clientY-rect.top;
     e.preventDefault();
-    sendChatMessage();
-  }
-});
-chatInput.addEventListener('input', () => {
-  chatInput.style.height = '38px';
-  chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
-});
+    function move(ev){
+      if(!dragging) return;
+      const pr=panelEl.parentElement.getBoundingClientRect();
+      panelEl.style.left=(ev.clientX-pr.left-offX)+"px";
+      panelEl.style.top=(ev.clientY-pr.top-offY)+"px";
+      panelEl.style.right="auto";
+    }
+    function up(){ dragging=false; document.removeEventListener("pointermove",move); document.removeEventListener("pointerup",up); }
+    document.addEventListener("pointermove", move);
+    document.addEventListener("pointerup", up);
+  });
+}
+makeDraggable(document.getElementById("panel"), document.getElementById("panelHead"));
+makeDraggable(document.getElementById("selPopup"), document.getElementById("selPopupHead"));
 
+/* ---------- semantic view ---------- */
+function setGraphView(mode){
+  graphView=mode;
+  document.getElementById("viewDefaultBtn").classList.toggle("on", mode==="default");
+  document.getElementById("viewSemanticBtn").classList.toggle("on", mode==="semantic");
+  document.getElementById("g").style.display = mode==="default" ? "block":"none";
+  document.getElementById("semanticView").classList.toggle("active", mode==="semantic");
+  if(mode==="semantic") renderSemantic();
+}
+function renderSemantic(){
+  const p=activeProject;
+  const files=p.graph.nodes.filter(n=>n.type==="file");
+  const extEdges=p.graph.edges.filter(e=>e.kind==="calls_external");
+  const boxes=files.map(f=>{
+    const fns=p.graph.nodes.filter(n=>nodeGroup(n)==="function"&&n.parent===f.id);
+    const fnIds=new Set(fns.map(x=>x.id));
+    const touches=[...new Set(extEdges.filter(e=>fnIds.has(e.from)).map(e=>p.graph.nodes.find(x=>x.id===e.to).label))];
+    let cap=`${fns.length} function${fns.length===1?"":"s"}`;
+    if(touches.length) cap+=` · calls ${touches.join(", ")}`;
+    return {label:f.label, cap};
+  });
+  const c=p.graph.meta.counters;
+  const flagged=extEdges.filter(e=>e.needs_review);
+  const nl = `This repo has ${c.files} file${c.files===1?"":"s"} and ${c.functions} function${c.functions===1?"":"s"}. `
+    + (c.external? `It talks to ${c.external} external service${c.external===1?"":"s"}. `:"It doesn't make any external calls this pass could detect. ")
+    + (flagged.length? `${flagged.length} of those call${flagged.length===1?"s":""} couldn't be statically confirmed and ${flagged.length===1?"is":"are"} flagged for manual review.` : (c.external?"All external calls were statically resolved.":""));
+  const flowHtml = boxes.map((b,i)=>`<div class="semBox"><b>${b.label}</b><div>${b.cap}</div></div>${i<boxes.length-1?'<div class="semArrow">↓</div>':''}`).join("");
+  document.getElementById("semanticView").innerHTML=`
+    <div class="semNote">Semantic layer — preview. In the full product this flow and summary are generated live by the SLM from the parsed graph; this build renders the same underlying data deterministically instead.</div>
+    <div class="semFlow">${flowHtml || "<div class='semBox'>No files parsed.</div>"}</div>
+    <div class="semSummary">${nl}</div>
+  `;
+}
+
+/* ---------- export ---------- */
+function exportJSON(){
+  const ns=visibleNodes().map(n=>({...n}));
+  const idset=new Set(ns.map(n=>n.id));
+  const es=activeProject.graph.edges.filter(e=>idset.has(e.from)&&idset.has(e.to));
+  const blob=new Blob([JSON.stringify({project:activeProject.name,nodes:ns,edges:es},null,2)],{type:"application/json"});
+  triggerDownload(blob,activeProject.name+"-graph.json");
+}
+function exportSVG(){
+  const svg=document.getElementById("g").cloneNode(true);
+  svg.setAttribute("xmlns","http://www.w3.org/2000/svg");
+  const style=document.createElementNS(NS,"style");
+  style.textContent="text{font-family:sans-serif;fill:#F2EAE0}.edge{stroke:#6B6055;stroke-width:1.4}.edge.review{stroke:#E05C5C;stroke-dasharray:4 3}.node circle.main{stroke:#14110F;stroke-width:2}.node circle.ring{fill:none;stroke:#FF9462;stroke-width:1.6;stroke-dasharray:3 2}";
+  svg.insertBefore(style,svg.firstChild);
+  const bg=document.createElementNS(NS,"rect");
+  bg.setAttribute("x","0");bg.setAttribute("y","0");bg.setAttribute("width","960");bg.setAttribute("height","660");bg.setAttribute("fill","#14110F");
+  svg.insertBefore(bg,style.nextSibling);
+  const blob=new Blob([svg.outerHTML],{type:"image/svg+xml"});
+  triggerDownload(blob,activeProject.name+"-graph.svg");
+}
+function triggerDownload(blob,filename){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},400);
+}
+
+/* ---------- chat ---------- */
+function toggleChat(){
+  const box=document.getElementById("chatbox");
+  const open=box.classList.toggle("active");
+  document.getElementById("chatToggle").style.display=open?"none":"block";
+  if(open && !box.dataset.greeted){
+    box.dataset.greeted="1";
+    pushMsg("bot","Static preview assistant — I don't run real inference yet, but ask me anything about this repo's graph.");
+  }
+}
+function pushMsg(who,text){
+  const m=document.createElement("div");m.className="msg "+who;m.textContent=text;
+  document.getElementById("chatMsgs").appendChild(m);
+  document.getElementById("chatMsgs").scrollTop=9999;
+}
+function sendChat(){
+  const inp=document.getElementById("chatInput");
+  const val=inp.value.trim();if(!val)return;
+  pushMsg("user",val);inp.value="";
+  const hit=canned.find(c=>c.k.test(val));
+  setTimeout(()=>pushMsg("bot",hit?hit.r:defaultReply()),380);
+}
+
+/* ---------- admin ---------- */
+async function renderAdmin(){
+  const res=await fetch("/api/admin/overview");
+  const data=await res.json();
+  document.getElementById("adminStats").innerHTML=`
+    <div class="stat"><div class="num">${data.stats.workspaces}</div><div class="lbl">Workspaces</div></div>
+    <div class="stat"><div class="num">${data.stats.repos_mapped}</div><div class="lbl">Repos mapped</div></div>
+    <div class="stat"><div class="num">${data.stats.total_nodes}</div><div class="lbl">Total nodes</div></div>
+    <div class="stat"><div class="num">${data.stats.needs_review}</div><div class="lbl">Edges flagged for review</div></div>`;
+  document.getElementById("wsBody").innerHTML=data.workspaces.map(w=>`<tr><td>${w.name}</td><td>${w.repos}</td><td>${new Date(w.created*1000).toLocaleString()}</td></tr>`).join("") || "<tr><td colspan='3'>No workspaces yet.</td></tr>";
+  document.getElementById("repoBody").innerHTML=data.repos.map(r=>`<tr><td>${r.repo}</td><td>${r.workspace}</td><td>${r.nodes}</td><td>${r.needs_review}</td><td>${new Date(r.connected*1000).toLocaleString()}</td></tr>`).join("") || "<tr><td colspan='5'>No repos connected yet.</td></tr>";
+}
+
+loadProjects();
 </script>
 </body>
 </html>
