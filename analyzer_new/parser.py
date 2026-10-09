@@ -114,6 +114,7 @@ _F_MEMBER_ATTR = ("property", "attribute")  # `object.ATTR`
 
 # Anonymous keyword tokens (a token's `.type` is its literal text).
 _IMPORT_KEYWORD = "import"
+_AWAIT_KEYWORD = "await"
 _DOT_TOKEN = "."                          # distinguishes `import.meta` from an import
 
 # Calls that load a module at runtime. They are ordinary calls to the grammar,
@@ -580,6 +581,12 @@ def _extract_structure(rec: FileRecord, rel_path: str, root, source: bytes, ctx=
         if call is not None:
             # -- calls: record, then keep descending (nested calls live in args)
             callee, args_node = call
+            # TS/TSX generic calls may put await around the callee itself.
+            # Unwrap one keyword wrapper so spelling and position use its child.
+            if (callee.children and not callee.children[0].is_named
+                    and callee.children[0].type == _AWAIT_KEYWORD
+                    and len(callee.named_children) == 1):
+                callee = callee.named_children[0]
             callee_expr = _dotted(callee, source)
             arg_text = _inner_arg_text(args_node, source)
             if len(arg_text) > MAX_ARG_CHARS:
