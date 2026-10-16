@@ -1,0 +1,55 @@
+{
+  "job_id": "test_run_1",
+  "tenant_id": "tenant-1",
+  "mode": "full",
+  "state": "done",
+  "result": "ok",
+  "error": "",
+  "started_at": "2026-10-06T12:39:54+00:00",
+  "updated_at": "2026-10-06T12:41:07+00:00",
+  "finished_at": "2026-10-06T12:41:07+00:00",
+  "stages": {
+    "clone": {
+      "state": "done",
+      "started_at": "2026-10-06T12:39:54+00:00",
+      "finished_at": "2026-10-06T12:40:06+00:00",
+      "detail": ""
+    },
+    "parse": {
+      "state": "done",
+      "started_at": "2026-10-06T12:40:06+00:00",
+      "finished_at": "2026-10-06T12:40:16+00:00",
+      "detail": ""
+    },
+    "scip": {
+      "state": "done",
+      "started_at": "2026-10-06T12:40:16+00:00",
+      "finished_at": "2026-10-06T12:40:57+00:00",
+      "detail": ""
+    },
+    "symbol_map": {
+      "state": "done",
+      "started_at": "2026-10-06T12:40:57+00:00",
+      "finished_at": "2026-10-06T12:41:07+00:00",
+      "detail": ""
+    },
+    "graph": {
+      "state": "done",
+      "started_at": "2026-10-06T12:41:07+00:00",
+      "finished_at": "2026-10-06T12:41:07+00:00",
+      "detail": ""
+    },
+    "vector": {
+      "state": "done",
+      "started_at": "2026-10-06T12:41:07+00:00",
+      "finished_at": "2026-10-06T12:41:07+00:00",
+      "detail": ""
+    },
+    "join": {
+      "state": "done",
+      "started_at": "2026-10-06T12:41:07+00:00",
+      "finished_at": "2026-10-06T12:41:07+00:00",
+      "detail": ""
+    }
+  }
+}

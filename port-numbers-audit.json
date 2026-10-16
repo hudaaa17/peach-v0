@@ -1,0 +1,1214 @@
+{
+  "profile_seconds": {
+    "pairing": 0.023783683000146993,
+    "read_parse": 0.954700972005412,
+    "find_call_node": 0.0006332659932013485,
+    "binding_collection": 10.533208948999345,
+    "evaluate": 0.014177565994032193,
+    "everything_else": 8.195919823007898
+  },
+  "full_tree_walks_per_file": {
+    "sandbox/client.js": 5,
+    "tests/browser/fetchResponseErrors.browser.test.js": 3,
+    "tests/browser/requests.browser.test.js": 7,
+    "tests/browser/xsrf.browser.test.js": 3,
+    "tests/module/cjs/tests/helpers/cjs-typing.ts": 3,
+    "tests/module/esm/tests/helpers/esm-index.ts": 3,
+    "tests/setup/formBodyLengthCases.js": 15,
+    "tests/smoke/cjs/tests/auth.smoke.test.cjs": 7,
+    "tests/smoke/esm/tests/auth.smoke.test.js": 7,
+    "tests/unit/prototypePollution.test.js": 57,
+    "tests/unit/adapters/bodyLength.test.js": 15,
+    "tests/unit/adapters/dataURLProtocol.test.js": 19,
+    "tests/unit/adapters/directAgent.test.js": 13,
+    "tests/unit/adapters/errorDetails.test.js": 5,
+    "tests/unit/adapters/fetch.test.js": 3,
+    "tests/unit/adapters/http.test.js": 45,
+    "tests/unit/adapters/routingConsistency.test.js": 13,
+    "tests/unit/adapters/runtimeConsistency.test.js": 3,
+    "tests/unit/adapters/xhr.test.js": 3
+  },
+  "binding_collections_per_file": {
+    "sandbox/client.js": 2,
+    "tests/browser/fetchResponseErrors.browser.test.js": 1,
+    "tests/browser/requests.browser.test.js": 3,
+    "tests/browser/xsrf.browser.test.js": 1,
+    "tests/module/cjs/tests/helpers/cjs-typing.ts": 1,
+    "tests/module/esm/tests/helpers/esm-index.ts": 1,
+    "tests/setup/formBodyLengthCases.js": 7,
+    "tests/smoke/cjs/tests/auth.smoke.test.cjs": 3,
+    "tests/smoke/esm/tests/auth.smoke.test.js": 3,
+    "tests/unit/prototypePollution.test.js": 28,
+    "tests/unit/adapters/bodyLength.test.js": 7,
+    "tests/unit/adapters/dataURLProtocol.test.js": 9,
+    "tests/unit/adapters/directAgent.test.js": 6,
+    "tests/unit/adapters/errorDetails.test.js": 2,
+    "tests/unit/adapters/fetch.test.js": 1,
+    "tests/unit/adapters/http.test.js": 22,
+    "tests/unit/adapters/routingConsistency.test.js": 6,
+    "tests/unit/adapters/runtimeConsistency.test.js": 1,
+    "tests/unit/adapters/xhr.test.js": 1
+  },
+  "before": {
+    "literal": {
+      "partial_url": 5,
+      "full_url": 170,
+      "identifier": 67,
+      "relative_url": 224,
+      "spread_before_url": 3,
+      "escape_in_string": 1,
+      "empty_string": 2,
+      "host_incomplete": 136,
+      "no_url_argument": 4,
+      "member_access": 1,
+      "unsupported_authority": 2
+    },
+    "constprop": {
+      "skipped_not_pending": 17250,
+      "full_url": 3,
+      "value_not_static": 11,
+      "parameter": 12,
+      "multiple_assignments": 22,
+      "no_host_after_constprop": 24,
+      "complex_binding": 32,
+      "not_found": 1
+    }
+  },
+  "after": {
+    "literal": {
+      "partial_url": 5,
+      "full_url": 170,
+      "identifier": 67,
+      "relative_url": 224,
+      "spread_before_url": 3,
+      "escape_in_string": 1,
+      "empty_string": 2,
+      "port_boundary_host": 134,
+      "no_url_argument": 4,
+      "member_access": 1,
+      "unsupported_authority": 3,
+      "host_incomplete": 1
+    },
+    "constprop": {
+      "skipped_not_pending": 17250,
+      "full_url": 3,
+      "value_not_static": 22,
+      "parameter": 12,
+      "multiple_assignments": 22,
+      "no_host_after_constprop": 12,
+      "complex_binding": 32,
+      "port_boundary_host": 1,
+      "not_found": 1
+    }
+  },
+  "review_reasons": {
+    "before": {
+      "partial_url": 5,
+      "relative_url": 224,
+      "host_incomplete": 136,
+      "unsupported_authority": 2
+    },
+    "after": {
+      "partial_url": 5,
+      "relative_url": 224,
+      "port_boundary_host": 135,
+      "unsupported_authority": 3
+    }
+  },
+  "hosts_found": {
+    "before": 178,
+    "after": 313
+  },
+  "changed_hosts": [
+    {
+      "file": "tests/smoke/cjs/tests/auth.smoke.test.cjs",
+      "line": 48,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/smoke/cjs/tests/auth.smoke.test.cjs",
+      "line": 108,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/smoke/cjs/tests/auth.smoke.test.cjs",
+      "line": 125,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/smoke/esm/tests/auth.smoke.test.js",
+      "line": 48,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/smoke/esm/tests/auth.smoke.test.js",
+      "line": 108,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/smoke/esm/tests/auth.smoke.test.js",
+      "line": 125,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 343,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 387,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 419,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 436,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 485,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 499,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 523,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 550,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 589,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 626,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 655,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 734,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 1010,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 1028,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 1053,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 1076,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 1094,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 1108,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 1123,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 1144,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 1156,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 1174,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 1188,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 1391,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 1403,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 1565,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/prototypePollution.test.js",
+      "line": 1603,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/directAgent.test.js",
+      "line": 106,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/directAgent.test.js",
+      "line": 331,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/directAgent.test.js",
+      "line": 357,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/directAgent.test.js",
+      "line": 406,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/directAgent.test.js",
+      "line": 434,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/errorDetails.test.js",
+      "line": 28,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/errorDetails.test.js",
+      "line": 57,
+      "literal": "https://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 107,
+      "literal": "http://127.0.0.1:",
+      "old_host": null,
+      "host": "127.0.0.1",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 151,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 180,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 240,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 265,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 291,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 380,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 411,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 436,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 460,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 482,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 510,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 532,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 621,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 657,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 689,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 721,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 816,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 891,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 930,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 954,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 993,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1015,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1038,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1134,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1152,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1172,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1190,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1207,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1227,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1251,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1269,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1288,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1307,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1324,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1343,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1384,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1522,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1553,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1586,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1607,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1627,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1645,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1662,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1694,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1719,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1750,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1783,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1822,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1861,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1890,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1904,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 1984,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 2018,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 2043,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 2088,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 2152,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 2234,
+      "literal": "https://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 2318,
+      "literal": "https://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 2407,
+      "literal": "https://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 2488,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 2550,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 2844,
+      "literal": "https://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 2949,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 3029,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 3216,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 3279,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 3340,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 3841,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 3891,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 3921,
+      "literal": "https://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 4109,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 4126,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 4155,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 4251,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 4303,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 4692,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 4732,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 4776,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 4957,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 5026,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 5084,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 5136,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 5188,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 5243,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 5286,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 5307,
+      "literal": "http://fake-name.axios:",
+      "old_host": null,
+      "host": "fake-name.axios",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 5331,
+      "literal": "http://fake-name.axios:",
+      "old_host": null,
+      "host": "fake-name.axios",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 5355,
+      "literal": "http://fake-name.axios:",
+      "old_host": null,
+      "host": "fake-name.axios",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 5379,
+      "literal": "http://fake-name.axios:",
+      "old_host": null,
+      "host": "fake-name.axios",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 5403,
+      "literal": "http://fake-name.axios:",
+      "old_host": null,
+      "host": "fake-name.axios",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 5448,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/http.test.js",
+      "line": 6236,
+      "literal": "http://localhost:",
+      "old_host": null,
+      "host": "localhost",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/routingConsistency.test.js",
+      "line": 165,
+      "literal": "https://first.example.invalid:",
+      "old_host": null,
+      "host": "first.example.invalid",
+      "review_reason": "port_boundary_host"
+    },
+    {
+      "file": "tests/unit/adapters/routingConsistency.test.js",
+      "line": 206,
+      "literal": "http://api.example.invalid:",
+      "old_host": null,
+      "host": "api.example.invalid",
+      "review_reason": "port_boundary_host"
+    }
+  ],
+  "after_seconds": {
+    "literal": 1.741512325000258,
+    "constprop": 11.946838361999653
+  },
+  "audit_input_identical": true,
+  "numeric_node_names": {
+    "python": "integer",
+    "javascript": "number",
+    "typescript": "number"
+  }
+}

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: shared}
+data: {FROM_URL: "https://envfrom.example.com/x"}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: envfrom}
+spec:
+  template:
+    spec:
+      containers:
+        - name: app
+          image: example/app:latest
+          envFrom:
+            - configMapRef: {name: shared}
+            - configMapRef: {name: shared}
+              prefix: PRE_

@@ -1,0 +1,11 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: init}
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: init
+          image: example/app:latest
+          env: [{name: INIT, value: "https://init.example.com"}]
+      containers: [{name: app, image: "example/app:latest"}]

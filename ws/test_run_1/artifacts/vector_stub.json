@@ -1,0 +1,22 @@
+{
+  "stub": true,
+  "note": "Chunking and embedding are not implemented; this file only proves the vector branch can read symbol_map.json.",
+  "tenant_id": "tenant-1",
+  "commit_sha": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+  "total_files": 178,
+  "total_symbols": 2114,
+  "files_by_coverage": {
+    "scip": 91,
+    "treesitter_only": 0,
+    "fallback_lines": 0,
+    "skipped": 0,
+    "unparsed": 87
+  },
+  "symbols_by_coverage": {
+    "scip": 2114,
+    "treesitter_only": 0,
+    "fallback_lines": 0,
+    "skipped": 0,
+    "unparsed": 0
+  }
+}

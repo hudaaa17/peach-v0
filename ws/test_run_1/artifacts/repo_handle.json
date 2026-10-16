@@ -1,0 +1,8 @@
+{
+  "commit_sha": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+  "default_branch": "main",
+  "is_shallow": true,
+  "job_id": "test_run_1",
+  "root": "/app/ws/test_run_1/repo",
+  "url": "https://github.com/pallets/click.git"
+}

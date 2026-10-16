@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: multidoc}
+data: {endpoint: "https://multidoc.example.com/x"}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: multidoc}
+spec:
+  template:
+    spec:
+      containers:
+        - name: app
+          image: example/app:latest
+          env:
+            - name: MULTIDOC
+              valueFrom:
+                configMapKeyRef: {name: multidoc, key: endpoint}

@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>peach — repo system mapper</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍑</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#14110F; --surface:#1B1712; --line:#332C24; --line-soft:#241F19;
+  --ink:#F2EAE0; --ink-soft:#978A7C; --ink-faint:#6B6055;
+  --coral:#FF9462; --coral-soft:#FFAB7C; --peach:#7A4A32; --peach-light:rgba(255,148,98,.14);
+  --amber:#E05C5C; --warn-bg:rgba(224,92,92,.10); --warn-border:rgba(224,92,92,.4); --warn-text:#E8A1A1;
+  --file:#8FA6C9; --fn:#8FBF8A; --ext:#E08A5C; --cfg:#D9C97A;
+  --on-accent:#241206;
+  --shadow:0 1px 3px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;}
+h1,h2,h3,.serif{font-family:'Fraunces',serif;}
+button{font-family:inherit;cursor:pointer;}
+.topbar{display:flex;align-items:center;gap:16px;padding:14px 22px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;}
+.wordmark{font-size:22px;font-weight:600;color:var(--coral);}
+.crumb{color:var(--ink-soft);font-size:14px;}
+.crumbLink{cursor:pointer;color:var(--coral);font-weight:600;}
+.crumbLink:hover{text-decoration:underline;}
+.spacer{flex:1}
+/* inputs/textareas rely on browser defaults (white bg) which don't work on a dark surface */
+.modal input,.chatIn input,textarea{background:var(--surface);color:var(--ink);}
+.roleToggle{display:flex;background:var(--line-soft);border-radius:999px;padding:3px;gap:2px;}
+.roleToggle button{border:none;background:transparent;padding:7px 14px;border-radius:999px;font-size:13px;font-weight:600;color:var(--ink-soft);}
+.roleToggle button.active{background:var(--coral);color:var(--on-accent);}
+.view{display:none;padding:26px 30px 60px;max-width:1200px;margin:0 auto;}
+.view.active{display:block;}
+.dashHead h1{font-size:28px;margin:0 0 4px;font-weight:600;}
+.sub{color:var(--ink-soft);font-size:14px;margin:0 0 26px;}
+.errbox{background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn-text);border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:16px;display:none;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);}
+.pcard{cursor:pointer;transition:border-color .15s;position:relative;}
+.pcard:hover{border-color:var(--coral-soft);}
+.pcard .name{font-weight:600;font-size:16px;margin-bottom:2px;padding-right:22px;}
+.pcard .url{color:var(--ink-soft);font-size:12.5px;word-break:break-all;margin-bottom:14px;}
+.statrow{display:flex;gap:14px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--line-soft);padding-top:10px;}
+.statrow b{color:var(--ink);font-weight:600;}
+.delBtn{position:absolute;top:12px;right:12px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink-faint);font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;}
+.delBtn:hover{color:var(--on-accent);background:var(--coral);border-color:var(--coral);}
+.addcard{border:1.5px dashed var(--peach);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--coral);min-height:130px;text-align:center;}
+.addcard.disabled{opacity:.5;cursor:not-allowed;color:var(--ink-faint);border-color:var(--line);}
+.plus{font-size:26px;line-height:1;}
+.limitNote{font-size:12px;color:var(--ink-faint);margin-top:4px;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:100;padding:16px;}
+.overlay.active{display:flex;}
+.modal{background:var(--surface);border-radius:16px;padding:24px;width:100%;max-width:420px;box-shadow:0 12px 40px rgba(0,0,0,.5);}
+.modal h3{margin:0 0 4px;font-size:18px;}
+.modal p{color:var(--ink-soft);font-size:13px;margin:0 0 16px;}
+.modal input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-size:14px;margin-bottom:14px;font-family:inherit;}
+.btnrow{display:flex;gap:10px;justify-content:flex-end;}
+.btn{border:none;border-radius:9px;padding:9px 16px;font-size:13.5px;font-weight:600;}
+.btn.primary{background:var(--coral);color:var(--on-accent);}
+.btn.primary:disabled{background:var(--ink-faint);cursor:not-allowed;}
+.btn.ghost{background:var(--line-soft);color:var(--ink);}
+.progress{font-size:13px;color:var(--ink-soft);display:none;}
+.progress.active{display:block;}
+.pstep{padding:3px 0;}
+.pstep.done{color:var(--coral);}
+.gwrap{display:none;height:calc(100vh - 58px);}
+.gwrap.active{display:flex;}
+.gside{width:230px;border-right:1px solid var(--line);background:var(--surface);padding:16px;overflow-y:auto;flex-shrink:0;}
+.gside h4{font-size:11px;color:var(--ink-soft);margin:14px 0 8px;font-weight:600;}
+.gside h4:first-child{margin-top:0;}
+.hint{font-size:11px;color:var(--ink-faint);margin:-4px 0 10px;line-height:1.4;}
+.legend{display:flex;flex-direction:column;gap:6px;margin-bottom:6px;font-size:12.5px;}
+.legend span{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;vertical-align:-1px;}
+.toolbtn{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:13px;margin-bottom:7px;color:var(--ink);}
+.toolbtn:hover{border-color:var(--coral-soft);}
+.toolbtn.on{background:var(--peach-light);border-color:var(--coral-soft);}
+.viewRow{display:flex;gap:6px;margin-bottom:4px;}
+.viewRow .toolbtn{flex:1;justify-content:center;margin-bottom:0;}
+.reviewLine{width:100%;text-align:left;background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--warn-text);margin-bottom:6px;}
+.annotItem{font-size:12px;padding:6px 7px;border-radius:7px;border:1px solid var(--line);margin-bottom:5px;cursor:pointer;}
+.annotItem:hover{border-color:var(--coral-soft);}
+.annotItem b{display:block;font-size:12px;}
+.annotItem span{color:var(--ink-soft);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.gmain{flex:1;position:relative;overflow:hidden;background:radial-gradient(circle at 30% 20%,#1B1712,var(--bg));}
+svg#g{width:100%;height:100%;touch-action:none;}
+.node{cursor:grab;}
+.node circle.main{stroke:var(--bg);stroke-width:2;}
+.node circle.ring{fill:none;stroke:var(--coral);stroke-width:1.6;stroke-dasharray:3 2;}
+.node.selected circle.main{stroke:var(--coral);stroke-width:3;}
+.node text{font-size:10.5px;fill:var(--ink);pointer-events:none;}
+.node.dim{opacity:.15;}
+.edge{stroke:var(--ink-faint);stroke-width:1.4;fill:none;}
+.edge.review{stroke:var(--amber);stroke-dasharray:4 3;}
+.edge.dim{opacity:.08;}
+.notepin{fill:var(--coral);stroke:var(--bg);stroke-width:1;}
+.selrect{fill:rgba(255,148,98,.14);stroke:var(--coral-soft);stroke-dasharray:5 3;stroke-width:1.3;}
+.floatPanel{position:absolute;width:270px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 26px rgba(0,0,0,.45);display:none;max-height:calc(100% - 28px);}
+.floatPanel.active{display:flex;flex-direction:column;}
+.floatHead{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line);cursor:move;border-radius:14px 14px 0 0;background:var(--line-soft);flex-shrink:0;}
+.floatHead b{font-size:13px;}
+.floatHead .ctrls{display:flex;gap:6px;}
+.floatHead button{background:none;border:none;color:var(--ink-soft);font-size:13px;padding:2px 4px;}
+.floatHead button:hover{color:var(--coral);}
+.floatBody{padding:14px;overflow-y:auto;}
+.floatPanel.minimized .floatBody{display:none;}
+.floatPanel.minimized{width:180px;}
+#panel{top:14px;right:14px;}
+#selPopup{top:80px;left:340px;width:250px;}
+.tag{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--peach-light);color:var(--coral-soft);margin:4px 0 10px;}
+.panel .row{font-size:12.5px;color:var(--ink-soft);margin-bottom:4px;}
+.panel .row b{color:var(--ink);}
+textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12.5px;font-family:inherit;resize:vertical;min-height:50px;}
+.reviewbox{background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:8px;padding:8px;font-size:12px;color:var(--warn-text);margin:8px 0;}
+.connlist{list-style:none;padding:0;margin:6px 0 0;font-size:12.5px;}
+.connlist li{padding:4px 0;border-top:1px solid var(--line-soft);cursor:pointer;color:var(--ink-soft);}
+.connlist li:hover{color:var(--coral);}
+.secTitle{font-size:11.5px;font-weight:600;color:var(--ink-soft);margin:12px 0 6px;}
+.incItem{background:var(--line-soft);border-radius:8px;padding:6px 8px;font-size:11.5px;margin-bottom:5px;}
+.incItem time{color:var(--ink-faint);font-size:10.5px;display:block;margin-top:2px;}
+.smallbtn{border:none;background:var(--coral);color:var(--on-accent);border-radius:7px;padding:6px 10px;font-size:11.5px;margin-top:6px;}
+.ghostbtn{border:1px solid var(--line);background:none;color:var(--ink-soft);border-radius:7px;padding:6px 10px;font-size:11.5px;margin-top:6px;}
+.chatToggle{position:absolute;bottom:16px;right:14px;background:var(--coral);color:var(--on-accent);border:none;border-radius:999px;padding:11px 16px;font-size:13px;font-weight:600;box-shadow:0 4px 14px rgba(255,148,98,.35);}
+.chatbox{position:absolute;bottom:16px;right:14px;width:290px;height:360px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.45);display:none;flex-direction:column;overflow:hidden;}
+.chatbox.active{display:flex;}
+.chatHead{padding:11px 14px;border-bottom:1px solid var(--line);font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center;}
+.chatHead button{background:none;border:none;color:var(--ink-soft);font-size:15px;}
+.chatMsgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;}
+.msg{font-size:12.5px;padding:8px 10px;border-radius:10px;max-width:85%;line-height:1.4;}
+.msg.user{background:var(--peach-light);align-self:flex-end;}
+.msg.bot{background:var(--line-soft);align-self:flex-start;}
+.chatIn{display:flex;border-top:1px solid var(--line);}
+.chatIn input{flex:1;border:none;padding:10px 12px;font-size:12.5px;font-family:inherit;}
+.chatIn input:focus{outline:none;}
+.chatIn button{border:none;background:var(--coral);color:var(--on-accent);padding:0 14px;font-size:13px;}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px;}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;}
+.stat .num{font-size:24px;font-weight:600;font-family:'Fraunces',serif;color:var(--coral);}
+.stat .lbl{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:13px;}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line-soft);}
+th{color:var(--ink-soft);font-weight:600;font-size:11.5px;background:var(--line-soft);}
+tr:last-child td{border-bottom:none;}
+.sectitle{font-size:15px;font-weight:600;margin:26px 0 10px;}
+.backlink{font-size:13px;color:var(--coral);background:none;border:none;padding:0;margin-bottom:14px;font-weight:600;}
+/* semantic view */
+#semanticView{display:none;position:absolute;inset:0;overflow-y:auto;padding:26px 40px;}
+#semanticView.active{display:block;}
+.semNote{font-size:12px;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;max-width:640px;margin:0 auto 22px;}
+.semFlow{max-width:520px;margin:0 auto;}
+.semBox{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--coral-soft);border-radius:10px;padding:12px 14px;margin-bottom:6px;box-shadow:var(--shadow);}
+.semBox b{font-size:13.5px;}
+.semBox div{font-size:12px;color:var(--ink-soft);margin-top:3px;}
+.semArrow{text-align:center;color:var(--peach);font-size:16px;margin:-2px 0 4px;}
+.semSummary{max-width:520px;margin:24px auto 0;background:var(--peach-light);border-radius:12px;padding:14px 16px;font-size:13px;line-height:1.6;color:var(--ink);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wordmark">peach</div>
+  <div class="crumb" id="crumb">Dashboard</div>
+  <div class="spacer"></div>
+  <div class="roleToggle">
+    <button class="active" id="roleUserBtn" onclick="setRole('user')">User</button>
+    <button id="roleAdminBtn" onclick="setRole('admin')">Admin</button>
+  </div>
+</div>
+
+<div class="view active" id="view-dash">
+  <div class="dashHead"><h1>Your projects</h1></div>
+  <p class="sub">Connect a public GitHub repo to map its services and calls. This workspace can connect up to 3 repos.</p>
+  <div class="errbox" id="dashErr"></div>
+  <div class="grid" id="projectGrid"></div>
+</div>
+
+<div class="gwrap" id="view-graph">
+  <div class="gside">
+    <h4>Node types</h4>
+    <div class="legend">
+      <div><span style="background:var(--file)"></span>File</div>
+      <div><span style="background:var(--fn)"></span>Function / class</div>
+      <div><span style="background:var(--ext)"></span>External service</div>
+      <div><span style="background:var(--cfg)"></span>Config match</div>
+    </div>
+    <div class="hint">Drag any node to reposition it. Drag on empty space to select a region. Double-click a file to drill into just that file.</div>
+
+    <h4>View</h4>
+    <div class="viewRow">
+      <button class="toolbtn on" id="viewDefaultBtn" onclick="setGraphView('default')">Default</button>
+      <button class="toolbtn" id="viewSemanticBtn" onclick="setGraphView('semantic')">Semantic</button>
+    </div>
+    <button class="toolbtn" id="rollupBtn" onclick="toggleRollup()"><span id="rollupLbl">Drill down (show functions)</span></button>
+    <button class="toolbtn" onclick="clearIsolate()">Show full graph</button>
+
+    <h4>Export</h4>
+    <button class="toolbtn" onclick="exportJSON()">Export graph JSON</button>
+    <button class="toolbtn" onclick="exportSVG()">Export graph SVG (as arranged)</button>
+
+    <h4>Run diagnostics</h4>
+    <div id="diagBox"></div>
+
+    <h4>Annotations</h4>
+    <div id="annotList" style="margin-bottom:6px;"></div>
+    <button class="toolbtn" onclick="clearAnnotations()">Clear all annotations</button>
+  </div>
+  <div class="gmain">
+    <svg id="g"></svg>
+    <div id="semanticView"></div>
+
+    <div class="floatPanel" id="panel">
+      <div class="floatHead" id="panelHead"><b id="panelTitleText">Node</b><div class="ctrls"><button onclick="closePanel()">✕</button></div></div>
+      <div class="floatBody" id="panelBody"></div>
+    </div>
+
+    <div class="floatPanel" id="selPopup">
+      <div class="floatHead" id="selPopupHead"><b>Selection note</b><div class="ctrls"><button onclick="toggleMinimize('selPopup')" id="selMinBtn">–</button><button onclick="closeSelPopup()">✕</button></div></div>
+      <div class="floatBody">
+        <div class="row" id="selCount" style="margin-bottom:8px;"></div>
+        <textarea id="selNoteInput" placeholder="Write a note about this selection…"></textarea>
+        <button class="smallbtn" onclick="applyNoteToSelection()">Apply to selection</button>
+        <button class="ghostbtn" onclick="closeSelPopup()">Cancel</button>
+      </div>
+    </div>
+
+    <button class="chatToggle" id="chatToggle" onclick="toggleChat()">Ask about this repo</button>
+    <div class="chatbox" id="chatbox">
+      <div class="chatHead"><span>Repo assistant (preview)</span><button onclick="toggleChat()">✕</button></div>
+      <div class="chatMsgs" id="chatMsgs"></div>
+      <div class="chatIn"><input id="chatInput" placeholder="Ask a question…" onkeydown="if(event.key==='Enter')sendChat()"><button onclick="sendChat()">Send</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="view" id="view-admin">
+  <button class="backlink" onclick="setRole('user')">← Back to user view</button>
+  <h1 style="font-size:26px;font-weight:600;margin:0 0 4px;">Admin overview</h1>
+  <p class="sub">Read-only view across all workspaces on this instance. In-memory only — clears on server restart.</p>
+  <div class="stats" id="adminStats"></div>
+  <div class="sectitle">Workspaces</div>
+  <table><thead><tr><th>Workspace</th><th>Repos connected</th><th>Created</th></tr></thead><tbody id="wsBody"></tbody></table>
+  <div class="sectitle">All repo connections</div>
+  <table><thead><tr><th>Repo</th><th>Workspace</th><th>Nodes</th><th>Needs review</th><th>Connected</th></tr></thead><tbody id="repoBody"></tbody></table>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3>Connect a repo</h3>
+    <p>Public GitHub repos only. Paste a full URL or <code>owner/repo</code>. Analysis runs live on the server — small repos take a few seconds.</p>
+    <input id="repoInput" placeholder="owner/repo or https://github.com/owner/repo">
+    <div class="progress" id="progress"></div>
+    <div class="btnrow">
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn primary" id="mapBtn" onclick="runConnect()">Map it</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let projects = [];
+let activeProject = null;
+let isolateId = null;
+let reviewIsolateActive = false;
+let rolledUp = true;
+let openFiles = new Set();
+let selectedNode = null;
+let selectedIds = new Set();
+let graphView = 'default';
+
+const canned = [
+  {k:/external|service|api|call/i, r:"This repo has a few calls_external edges — dashed amber ones are flagged needs_review because a literal/const-prop pass couldn't resolve the target. Click the edge's function node, or the \"needs review\" line in the sidebar, for details."},
+  {k:/review|flag/i, r:"needs_review means the call's target couldn't be traced to a string literal statically. In the full peach pipeline that's where Joern/SLM escalation would kick in — this build stops short of that and just flags it."},
+  {k:/config/i, r:"Config matches come from cross-referencing resolved hosts against yaml/json/.env/Dockerfiles found in the repo."},
+  {k:/semantic|flowchart|flow chart|natural language/i, r:"The Semantic view is a static preview — in the full product an SLM generates this narrative live from the graph. Right now it's a deterministic rendering of the same data."},
+  {k:/hi|hello|hey/i, r:"Hey! I'm a static preview assistant for now — no live model behind me yet. Try exploring the graph, or ask about external calls or review flags."},
+];
+function defaultReply(){return "I'm just a static preview response for now — the real RAG assistant isn't wired up in this build. Try the graph's isolate, rollup and semantic-view tools on the left to explore the repo instead.";}
+
+const NS="http://www.w3.org/2000/svg";
+
+/* ---------- node type normalization ----------
+   The backend's node "type" field is the raw definition kind coming out of
+   the parser — "function", "method", "class", "module_scope" for defs,
+   "external_service" for external calls, "file" and "config" for the
+   other two. The graph UI only draws four visual buckets (file / function /
+   external / config), so nodeGroup() maps every raw type onto one of
+   those instead of assuming n.type already is one. typeLabel() is the
+   inverse direction: a human-readable label for the raw type, used in the
+   node detail panel where the finer distinction (method vs class) is
+   actually useful to show. */
+function nodeGroup(n){
+  const t=n&&n.type;
+  if(t==="file") return "file";
+  if(t==="config") return "config";
+  if(t==="external_service"||t==="external") return "external";
+  return "function"; // function, method, class, module_scope, anything else
+}
+function typeLabel(t){
+  const known={file:"File",function:"Function",method:"Method",class:"Class",
+    module_scope:"Module scope",external_service:"External service",
+    external:"External service",config:"Config file"};
+  if(known[t]) return known[t];
+  return t ? t.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase()) : "Node";
+}
+
+/* ---------- layout ---------- */
+function layout(nodes){
+  const groups={file:[],function:[],external:[],config:[]};
+  nodes.forEach(n=>groups[nodeGroup(n)].push(n));
+  const cx=480,cy=330;
+  const radii={file:120,function:230,external:340,config:400};
+  Object.keys(groups).forEach(t=>{
+    const arr=groups[t],r=radii[t];
+    arr.forEach((n,i)=>{
+      const a=(i/Math.max(arr.length,1))*Math.PI*2 + (t==="function"?0.3:0);
+      n.x=cx+r*Math.cos(a); n.y=cy+r*Math.sin(a);
+    });
+  });
+}
+
+/* Fills in what the backend's graph.meta doesn't provide in the shape the
+   UI needs: a parent file id on every def node (backend gives a raw path
+   in n.file, not the "file:<path>" node id) and a counters summary object
+   (backend's meta has files_parsed/needs_review etc. as top-level scalars,
+   not a nested counters={files,functions,external,needs_review}). Safe to
+   call more than once on the same graph. */
+function normalizeGraph(graph){
+  graph.nodes.forEach(n=>{
+    if(!n.parent && n.file) n.parent = "file:"+n.file;
+  });
+  const counts={file:0,function:0,external:0,config:0};
+  graph.nodes.forEach(n=>{ counts[nodeGroup(n)]++; });
+  graph.meta = graph.meta || {};
+  graph.meta.counters = {
+    files: counts.file,
+    functions: counts.function,
+    external: counts.external,
+    needs_review: graph.edges.filter(e=>e.needs_review).length,
+  };
+  if(graph.meta.elapsed_s===undefined) graph.meta.elapsed_s = graph.meta.elapsed_seconds;
+  return graph;
+}
+
+/* ---------- dashboard ---------- */
+async function loadProjects(){
+  const res = await fetch("/api/projects");
+  const data = await res.json();
+  projects = data.projects.map(p=>{ normalizeGraph(p.graph); layout(p.graph.nodes); p.graph.nodes.forEach(n=>{n.incidents=n.incidents||[];}); return p; });
+  renderDash();
+}
+
+function renderDash(){
+  const grid=document.getElementById("projectGrid");
+  grid.innerHTML="";
+  projects.forEach(p=>{
+    const c=p.graph.meta.counters;
+    const el=document.createElement("div");
+    el.className="card pcard";
+    el.onclick=()=>openProject(p.id);
+    el.innerHTML=`<button class="delBtn" onclick="deleteProject('${p.id}',event)" title="Disconnect repo">✕</button>
+      <div class="name">${p.name}</div><div class="url">${p.url}</div>
+      <div class="statrow"><span><b>${c.files}</b> files</span><span><b>${c.functions}</b> functions</span><span><b>${c.needs_review}</b> flagged</span></div>`;
+    grid.appendChild(el);
+  });
+  const add=document.createElement("div");
+  add.className="card addcard"+(projects.length>=3?" disabled":"");
+  add.onclick=()=>{if(projects.length<3)openModal();};
+  add.innerHTML=`<div class="plus">+</div><div>Connect repo</div><div class="limitNote">${projects.length}/3 connected</div>`;
+  grid.appendChild(add);
+}
+
+async function deleteProject(id, ev){
+  ev.stopPropagation();
+  if(!confirm("Disconnect this repo? This can't be undone.")) return;
+  await fetch("/api/projects/"+id, {method:"DELETE"});
+  projects = projects.filter(p=>p.id!==id);
+  renderDash();
+}
+
+function openModal(){document.getElementById("overlay").classList.add("active");document.getElementById("progress").className="progress";document.getElementById("progress").innerHTML="";document.getElementById("repoInput").value="";document.getElementById("dashErr").style.display="none";}
+function closeModal(){document.getElementById("overlay").classList.remove("active");}
+
+async function runConnect(){
+  const val=document.getElementById("repoInput").value.trim();
+  if(!val)return;
+  const btn=document.getElementById("mapBtn");btn.disabled=true;
+  const steps=["Shallow cloning repo…","Structural parse (ast / regex pass)…","Internal symbol resolution…","External-call pattern match…","Literal & const-prop check…","Config cross-reference…","Rendering graph…"];
+  const box=document.getElementById("progress");box.className="progress active";box.innerHTML="";
+  let i=0;
+  const timer=setInterval(()=>{
+    if(i>0 && box.children[i-1]) box.children[i-1].classList.add("done");
+    if(i<steps.length){const d=document.createElement("div");d.className="pstep";d.textContent=steps[i];box.appendChild(d);i++;}
+  },380);
+
+  try{
+    const res = await fetch("/api/connect", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({repo_url: val})});
+    const data = await res.json();
+    clearInterval(timer);
+    Array.from(box.children).forEach(c=>c.classList.add("done"));
+    if(!res.ok){
+      const err=document.getElementById("dashErr");
+      err.textContent = data.error || "Could not analyze that repo.";
+      err.style.display="block";
+      btn.disabled=false;
+      return;
+    }
+    normalizeGraph(data.project.graph);
+    layout(data.project.graph.nodes);
+    data.project.graph.nodes.forEach(n=>{n.incidents=[];});
+    projects.push(data.project);
+    setTimeout(()=>{closeModal();btn.disabled=false;renderDash();openProject(data.project.id);},300);
+    }catch(e){
+      clearInterval(timer);
+      const err=document.getElementById("dashErr");
+      err.textContent = (e instanceof TypeError && e.message.includes("fetch"))
+        ? "Network error reaching the server."
+        : "Something went wrong rendering the result: " + e.message;
+      err.style.display="block";
+      btn.disabled=false;
+      console.error(e);
+    }
+}
+
+/* ---------- crumb / nav ---------- */
+function setCrumb(projectName){
+  const el=document.getElementById("crumb");
+  if(projectName) el.innerHTML = `<span class="crumbLink" onclick="setRole('user')">Dashboard</span> / ${projectName}`;
+  else el.textContent = "Dashboard";
+}
+function showView(name){
+  ["dash","admin"].forEach(v=>document.getElementById("view-"+v).classList.remove("active"));
+  document.getElementById("view-graph").classList.remove("active");
+  if(name==="graph") document.getElementById("view-graph").classList.add("active");
+  else document.getElementById("view-"+name).classList.add("active");
+}
+async function setRole(role){
+  document.getElementById("roleUserBtn").classList.toggle("active",role==="user");
+  document.getElementById("roleAdminBtn").classList.toggle("active",role==="admin");
+  if(role==="admin"){ await renderAdmin(); showView("admin"); document.getElementById("crumb").textContent="Admin"; }
+  else { showView("dash"); setCrumb(null); renderDash(); }
+}
+
+/* ---------- graph screen ---------- */
+function openProject(id){
+  activeProject=projects.find(p=>p.id===id);
+  isolateId=null;reviewIsolateActive=false;rolledUp=true;selectedNode=null;openFiles=new Set();selectedIds=new Set();
+  setCrumb(activeProject.name);
+  showView("graph");
+  document.getElementById("rollupLbl").textContent="Drill down (show functions)";
+  closePanel(); closeSelPopup();
+  setGraphView('default');
+  renderDiag();
+  drawGraph();
+  renderAnnotList();
+}
+function renderDiag(){
+  const c=activeProject.graph.meta.counters;
+  document.getElementById("diagBox").innerHTML=
+    `<div style="font-size:12px;color:var(--ink-soft);line-height:1.6;margin-bottom:6px;">${c.files} files · ${c.functions} functions<br>${c.external} external services<br>run ${activeProject.graph.meta.run} · ${activeProject.graph.meta.elapsed_s}s</div>
+     <button class="reviewLine" onclick="isolateReview()">⚠ ${c.needs_review} edge${c.needs_review===1?'':'s'} need review</button>`;
+}
+
+function visibleNodes(){
+  let ns=activeProject.graph.nodes;
+  if(rolledUp) ns=ns.filter(n=>nodeGroup(n)!=="function" || openFiles.has(n.parent));
+  return ns;
+}
+function toggleRollup(){
+  rolledUp=!rolledUp;
+  document.getElementById("rollupLbl").textContent = rolledUp?"Drill down (show functions)":"Roll up (hide functions)";
+  if(!rolledUp){ activeProject.graph.nodes.filter(n=>n.type==="file").forEach(f=>openFiles.add(f.id)); }
+  else openFiles.clear();
+  drawGraph();
+}
+function clearIsolate(){isolateId=null;reviewIsolateActive=false;drawGraph();}
+function isolateNode(id){ isolateId = isolateId===id? null : id; reviewIsolateActive=false; drawGraph(); if(selectedNode) selectNode(selectedNode); }
+function isolateReview(){ reviewIsolateActive=!reviewIsolateActive; isolateId=null; drawGraph(); }
+
+/* ---------- coordinate helpers ---------- */
+function toSvgCoords(evt){
+  const svg=document.getElementById("g");
+  const pt=svg.createSVGPoint();
+  pt.x=evt.clientX; pt.y=evt.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+
+/* ---------- node dragging ---------- */
+let dragNode=null, dragMoved=false, dragStart=null;
+function nodePointerDown(n, ev){
+  ev.stopPropagation();
+  dragNode=n; dragMoved=false;
+  dragStart=toSvgCoords(ev);
+  document.addEventListener("pointermove", onNodeDrag);
+  document.addEventListener("pointerup", onNodeUp);
+}
+function onNodeDrag(ev){
+  if(!dragNode) return;
+  const p=toSvgCoords(ev);
+  if(Math.abs(p.x-dragStart.x)>2||Math.abs(p.y-dragStart.y)>2) dragMoved=true;
+  dragNode.x=p.x; dragNode.y=p.y;
+  drawGraph();
+}
+function onNodeUp(){
+  document.removeEventListener("pointermove", onNodeDrag);
+  document.removeEventListener("pointerup", onNodeUp);
+  const n=dragNode, moved=dragMoved;
+  dragNode=null; dragMoved=false;
+  if(n && !moved) selectNode(n);
+}
+
+/* ---------- rectangle selection ---------- */
+let selecting=false, selStart=null, selRectEl=null;
+function bgPointerDown(ev){
+  selecting=true;
+  selStart=toSvgCoords(ev);
+  selRectEl=document.createElementNS(NS,"rect");
+  selRectEl.setAttribute("class","selrect");
+  document.getElementById("g").appendChild(selRectEl);
+  document.addEventListener("pointermove", onSelMove);
+  document.addEventListener("pointerup", onSelUp);
+  closePanel();
+}
+function onSelMove(ev){
+  if(!selecting) return;
+  const p=toSvgCoords(ev);
+  const x=Math.min(p.x,selStart.x), y=Math.min(p.y,selStart.y);
+  const w=Math.abs(p.x-selStart.x), h=Math.abs(p.y-selStart.y);
+  selRectEl.setAttribute("x",x); selRectEl.setAttribute("y",y);
+  selRectEl.setAttribute("width",w); selRectEl.setAttribute("height",h);
+}
+function onSelUp(){
+  document.removeEventListener("pointermove", onSelMove);
+  document.removeEventListener("pointerup", onSelUp);
+  selecting=false;
+  const x=parseFloat(selRectEl.getAttribute("x")||0), y=parseFloat(selRectEl.getAttribute("y")||0);
+  const w=parseFloat(selRectEl.getAttribute("width")||0), h=parseFloat(selRectEl.getAttribute("height")||0);
+  if(selRectEl.parentNode) selRectEl.remove();
+  if(w<4 && h<4) return;
+  const hit=visibleNodes().filter(n=> n.x>=x && n.x<=x+w && n.y>=y && n.y<=y+h);
+  if(hit.length===0) return;
+  selectedIds=new Set(hit.map(n=>n.id));
+  drawGraph();
+  openSelPopup(hit.length);
+}
+
+/* ---------- draw ---------- */
+function drawGraph(){
+  const svg=document.getElementById("g");
+  svg.innerHTML="";
+  svg.setAttribute("viewBox","0 0 960 660");
+  const defs=document.createElementNS(NS,"defs");
+  defs.innerHTML=`<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B6055"/></marker>`;
+  svg.appendChild(defs);
+
+  const bg=document.createElementNS(NS,"rect");
+  bg.setAttribute("x",0);bg.setAttribute("y",0);bg.setAttribute("width",960);bg.setAttribute("height",660);
+  bg.setAttribute("fill","transparent");
+  bg.addEventListener("pointerdown", bgPointerDown);
+  svg.appendChild(bg);
+
+  const nodes=visibleNodes();
+  const idset=new Set(nodes.map(n=>n.id));
+  let neighborSet=null;
+  if(reviewIsolateActive){
+    neighborSet=new Set();
+    activeProject.graph.edges.forEach(e=>{ if(e.needs_review){neighborSet.add(e.from);neighborSet.add(e.to);} });
+  } else if(isolateId){
+    neighborSet=new Set([isolateId]);
+    activeProject.graph.edges.forEach(e=>{if(e.from===isolateId)neighborSet.add(e.to);if(e.to===isolateId)neighborSet.add(e.from);});
+  }
+
+  activeProject.graph.edges.forEach(e=>{
+    if(!idset.has(e.from)||!idset.has(e.to))return;
+    const a=nodes.find(n=>n.id===e.from),b=nodes.find(n=>n.id===e.to);
+    const line=document.createElementNS(NS,"line");
+    line.setAttribute("x1",a.x);line.setAttribute("y1",a.y);line.setAttribute("x2",b.x);line.setAttribute("y2",b.y);
+    let cls="edge"+(e.needs_review?" review":"");
+    if(neighborSet && !(neighborSet.has(e.from)&&neighborSet.has(e.to))) cls+=" dim";
+    line.setAttribute("class",cls);
+    line.setAttribute("marker-end","url(#arrow)");
+    svg.appendChild(line);
+  });
+
+  nodes.forEach(n=>{
+    const g=document.createElementNS(NS,"g");
+    let cls="node"+(neighborSet && !neighborSet.has(n.id)?" dim":"")+(selectedIds.has(n.id)?" selected":"");
+    g.setAttribute("class",cls);
+    g.setAttribute("transform",`translate(${n.x},${n.y})`);
+    const grp=nodeGroup(n);
+    const r=grp==="file"?16:grp==="function"?11:grp==="external"?14:12;
+    if(n.note){
+      const ring=document.createElementNS(NS,"circle");
+      ring.setAttribute("class","ring"); ring.setAttribute("r",r+5);
+      g.appendChild(ring);
+    }
+    const circ=document.createElementNS(NS,"circle");
+    circ.setAttribute("class","main");
+    circ.setAttribute("r",r);
+    circ.setAttribute("fill","var(--"+({file:"file",function:"fn",external:"ext",config:"cfg"}[grp])+")");
+    g.appendChild(circ);
+    if(n.note){
+      const pin=document.createElementNS(NS,"circle");
+      pin.setAttribute("r",4.5);pin.setAttribute("cx",r-1);pin.setAttribute("cy",-r+1);pin.setAttribute("class","notepin");
+      g.appendChild(pin);
+      const pt=document.createElementNS(NS,"text");
+      pt.setAttribute("x",r-1);pt.setAttribute("y",-r+4.2);pt.setAttribute("text-anchor","middle");
+      pt.setAttribute("style","font-size:7px;fill:#241206;pointer-events:none;");
+      pt.textContent="!";
+      g.appendChild(pt);
+    }
+    const t=document.createElementNS(NS,"text");
+    t.setAttribute("y",r+11);t.setAttribute("text-anchor","middle");
+    t.textContent=n.label.length>16?n.label.slice(0,15)+"…":n.label;
+    g.appendChild(t);
+    g.addEventListener("pointerdown", ev=>nodePointerDown(n, ev));
+    if(n.type==="file"){
+      g.addEventListener("dblclick", ev=>{ ev.stopPropagation(); if(rolledUp){ openFiles.add(n.id); drawGraph(); } });
+    }
+    svg.appendChild(g);
+  });
+}
+
+/* ---------- node info panel (movable) ---------- */
+function selectNode(n){
+  selectedNode=n;
+  const panel=document.getElementById("panel");
+  panel.classList.add("active");
+  document.getElementById("panelTitleText").textContent=n.label;
+  const inc=activeProject.graph.edges.filter(e=>e.to===n.id||e.from===n.id);
+  const typeLbl=typeLabel(n.type);
+  let reviewHtml="";
+  const reviewEdges=inc.filter(e=>e.needs_review && (e.from===n.id||e.to===n.id));
+  if(reviewEdges.length) reviewHtml=`<div class="reviewbox">⚠ ${reviewEdges.length} edge(s) flagged needs_review — ${reviewEdges[0].reason}</div>`;
+  const connLis=inc.map(e=>{
+    const otherId=e.from===n.id?e.to:e.from;
+    const other=activeProject.graph.nodes.find(x=>x.id===otherId);
+    return `<li onclick='selectFromList("${otherId}")'>${e.kind} → ${other?other.label:otherId}</li>`;
+  }).join("");
+  if(!n.incidents) n.incidents=[];
+  const incHtml = n.incidents.length ? n.incidents.map(i=>`<div class="incItem">${escapeHtml(i.text)}<time>${new Date(i.ts).toLocaleString()}</time></div>`).join("") : "<div style='font-size:11.5px;color:var(--ink-faint);'>No incident history yet.</div>";
+  document.getElementById("panelBody").innerHTML=`
+    <div class="tag">${typeLbl}</div>
+    ${n.parent?`<div class="row"><b>File</b> ${activeProject.graph.nodes.find(x=>x.id===n.parent).label}</div>`:""}
+    ${n.line?`<div class="row"><b>Line</b> ${n.line}</div>`:""}
+    ${reviewHtml}
+    <button class="toolbtn ${isolateId===n.id?'on':''}" style="margin-top:6px;" onclick='isolateNode("${n.id}")'>Isolate this node</button>
+    <div class="row" style="margin-top:8px;"><b>Connections (${inc.length})</b></div>
+    <ul class="connlist">${connLis||"<li style='cursor:default'>None visible</li>"}</ul>
+
+    <div class="secTitle">Annotation (temporary)</div>
+    <textarea id="noteInput" placeholder="Add an annotation…">${n.note?escapeHtml(n.note):""}</textarea>
+    <button class="smallbtn" onclick='saveNote("${n.id}")'>Save annotation</button>
+
+    <div class="secTitle">Incident history</div>
+    ${incHtml}
+    <textarea id="incInput" placeholder="Log an incident or note on this node…" style="margin-top:6px;"></textarea>
+    <button class="smallbtn" onclick='addIncident("${n.id}")'>Add entry</button>
+    <div style="font-size:10.5px;color:var(--ink-faint);margin-top:5px;">Kept for this session only — the full product stores this permanently, linked to the node.</div>
+  `;
+}
+function escapeHtml(s){ const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+function selectFromList(id){
+  const n=activeProject.graph.nodes.find(x=>x.id===id);
+  if(n.parent && rolledUp && !openFiles.has(n.parent)){openFiles.add(n.parent);drawGraph();}
+  selectNode(n);
+}
+function saveNote(id){
+  const n=activeProject.graph.nodes.find(x=>x.id===id);
+  n.note=document.getElementById("noteInput").value;
+  drawGraph(); renderAnnotList();
+}
+function addIncident(id){
+  const n=activeProject.graph.nodes.find(x=>x.id===id);
+  const val=document.getElementById("incInput").value.trim();
+  if(!val) return;
+  if(!n.incidents) n.incidents=[];
+  n.incidents.push({text:val, ts:Date.now()});
+  selectNode(n);
+}
+function closePanel(){ document.getElementById("panel").classList.remove("active"); selectedNode=null; }
+
+/* ---------- annotations sidebar ---------- */
+function renderAnnotList(){
+  const box=document.getElementById("annotList");
+  if(!activeProject){ box.innerHTML=""; return; }
+  const annotated=activeProject.graph.nodes.filter(n=>n.note);
+  if(!annotated.length){ box.innerHTML="<div style='font-size:11.5px;color:var(--ink-faint);'>None yet.</div>"; return; }
+  box.innerHTML=annotated.map(n=>`<div class="annotItem" onclick='selectFromList("${n.id}")'><b>${n.label}</b><span>${escapeHtml(n.note)}</span></div>`).join("");
+}
+function clearAnnotations(){
+  if(!activeProject) return;
+  if(!confirm("Clear all annotations on this graph? Incident history is kept.")) return;
+  activeProject.graph.nodes.forEach(n=>{ n.note=""; });
+  drawGraph(); renderAnnotList();
+  if(selectedNode) selectNode(selectedNode);
+}
+
+/* ---------- selection popup (movable + minimizable) ---------- */
+function openSelPopup(count){
+  const pop=document.getElementById("selPopup");
+  pop.classList.remove("minimized");
+  pop.classList.add("active");
+  document.getElementById("selCount").innerHTML=`<b>${count}</b> node(s) selected`;
+  document.getElementById("selNoteInput").value="";
+}
+function closeSelPopup(){
+  document.getElementById("selPopup").classList.remove("active");
+  selectedIds=new Set();
+  drawGraph();
+}
+function applyNoteToSelection(){
+  const val=document.getElementById("selNoteInput").value;
+  activeProject.graph.nodes.filter(n=>selectedIds.has(n.id)).forEach(n=>{ n.note=val; });
+  closeSelPopup();
+  renderAnnotList();
+}
+function toggleMinimize(id){
+  const el=document.getElementById(id);
+  el.classList.toggle("minimized");
+  const btn=document.getElementById("selMinBtn");
+  if(btn) btn.textContent = el.classList.contains("minimized") ? "▢" : "–";
+}
+
+/* ---------- draggable floating panels ---------- */
+function makeDraggable(panelEl, handleEl){
+  let dragging=false, offX=0, offY=0;
+  handleEl.addEventListener("pointerdown", e=>{
+    if(e.target.tagName==="BUTTON") return;
+    dragging=true;
+    const rect=panelEl.getBoundingClientRect();
+    const parentRect=panelEl.parentElement.getBoundingClientRect();
+    offX=e.clientX-rect.left; offY=e.clientY-rect.top;
+    e.preventDefault();
+    function move(ev){
+      if(!dragging) return;
+      const pr=panelEl.parentElement.getBoundingClientRect();
+      panelEl.style.left=(ev.clientX-pr.left-offX)+"px";
+      panelEl.style.top=(ev.clientY-pr.top-offY)+"px";
+      panelEl.style.right="auto";
+    }
+    function up(){ dragging=false; document.removeEventListener("pointermove",move); document.removeEventListener("pointerup",up); }
+    document.addEventListener("pointermove", move);
+    document.addEventListener("pointerup", up);
+  });
+}
+makeDraggable(document.getElementById("panel"), document.getElementById("panelHead"));
+makeDraggable(document.getElementById("selPopup"), document.getElementById("selPopupHead"));
+
+/* ---------- semantic view ---------- */
+function setGraphView(mode){
+  graphView=mode;
+  document.getElementById("viewDefaultBtn").classList.toggle("on", mode==="default");
+  document.getElementById("viewSemanticBtn").classList.toggle("on", mode==="semantic");
+  document.getElementById("g").style.display = mode==="default" ? "block":"none";
+  document.getElementById("semanticView").classList.toggle("active", mode==="semantic");
+  if(mode==="semantic") renderSemantic();
+}
+function renderSemantic(){
+  const p=activeProject;
+  const files=p.graph.nodes.filter(n=>n.type==="file");
+  const extEdges=p.graph.edges.filter(e=>e.kind==="calls_external");
+  const boxes=files.map(f=>{
+    const fns=p.graph.nodes.filter(n=>nodeGroup(n)==="function"&&n.parent===f.id);
+    const fnIds=new Set(fns.map(x=>x.id));
+    const touches=[...new Set(extEdges.filter(e=>fnIds.has(e.from)).map(e=>p.graph.nodes.find(x=>x.id===e.to).label))];
+    let cap=`${fns.length} function${fns.length===1?"":"s"}`;
+    if(touches.length) cap+=` · calls ${touches.join(", ")}`;
+    return {label:f.label, cap};
+  });
+  const c=p.graph.meta.counters;
+  const flagged=extEdges.filter(e=>e.needs_review);
+  const nl = `This repo has ${c.files} file${c.files===1?"":"s"} and ${c.functions} function${c.functions===1?"":"s"}. `
+    + (c.external? `It talks to ${c.external} external service${c.external===1?"":"s"}. `:"It doesn't make any external calls this pass could detect. ")
+    + (flagged.length? `${flagged.length} of those call${flagged.length===1?"s":""} couldn't be statically confirmed and ${flagged.length===1?"is":"are"} flagged for manual review.` : (c.external?"All external calls were statically resolved.":""));
+  const flowHtml = boxes.map((b,i)=>`<div class="semBox"><b>${b.label}</b><div>${b.cap}</div></div>${i<boxes.length-1?'<div class="semArrow">↓</div>':''}`).join("");
+  document.getElementById("semanticView").innerHTML=`
+    <div class="semNote">Semantic layer — preview. In the full product this flow and summary are generated live by the SLM from the parsed graph; this build renders the same underlying data deterministically instead.</div>
+    <div class="semFlow">${flowHtml || "<div class='semBox'>No files parsed.</div>"}</div>
+    <div class="semSummary">${nl}</div>
+  `;
+}
+
+/* ---------- export ---------- */
+function exportJSON(){
+  const ns=visibleNodes().map(n=>({...n}));
+  const idset=new Set(ns.map(n=>n.id));
+  const es=activeProject.graph.edges.filter(e=>idset.has(e.from)&&idset.has(e.to));
+  const blob=new Blob([JSON.stringify({project:activeProject.name,nodes:ns,edges:es},null,2)],{type:"application/json"});
+  triggerDownload(blob,activeProject.name+"-graph.json");
+}
+function exportSVG(){
+  const svg=document.getElementById("g").cloneNode(true);
+  svg.setAttribute("xmlns","http://www.w3.org/2000/svg");
+  const style=document.createElementNS(NS,"style");
+  style.textContent="text{font-family:sans-serif;fill:#F2EAE0}.edge{stroke:#6B6055;stroke-width:1.4}.edge.review{stroke:#E05C5C;stroke-dasharray:4 3}.node circle.main{stroke:#14110F;stroke-width:2}.node circle.ring{fill:none;stroke:#FF9462;stroke-width:1.6;stroke-dasharray:3 2}";
+  svg.insertBefore(style,svg.firstChild);
+  const bg=document.createElementNS(NS,"rect");
+  bg.setAttribute("x","0");bg.setAttribute("y","0");bg.setAttribute("width","960");bg.setAttribute("height","660");bg.setAttribute("fill","#14110F");
+  svg.insertBefore(bg,style.nextSibling);
+  const blob=new Blob([svg.outerHTML],{type:"image/svg+xml"});
+  triggerDownload(blob,activeProject.name+"-graph.svg");
+}
+function triggerDownload(blob,filename){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},400);
+}
+
+/* ---------- chat ---------- */
+function toggleChat(){
+  const box=document.getElementById("chatbox");
+  const open=box.classList.toggle("active");
+  document.getElementById("chatToggle").style.display=open?"none":"block";
+  if(open && !box.dataset.greeted){
+    box.dataset.greeted="1";
+    pushMsg("bot","Static preview assistant — I don't run real inference yet, but ask me anything about this repo's graph.");
+  }
+}
+function pushMsg(who,text){
+  const m=document.createElement("div");m.className="msg "+who;m.textContent=text;
+  document.getElementById("chatMsgs").appendChild(m);
+  document.getElementById("chatMsgs").scrollTop=9999;
+}
+function sendChat(){
+  const inp=document.getElementById("chatInput");
+  const val=inp.value.trim();if(!val)return;
+  pushMsg("user",val);inp.value="";
+  const hit=canned.find(c=>c.k.test(val));
+  setTimeout(()=>pushMsg("bot",hit?hit.r:defaultReply()),380);
+}
+
+/* ---------- admin ---------- */
+async function renderAdmin(){
+  const res=await fetch("/api/admin/overview");
+  const data=await res.json();
+  document.getElementById("adminStats").innerHTML=`
+    <div class="stat"><div class="num">${data.stats.workspaces}</div><div class="lbl">Workspaces</div></div>
+    <div class="stat"><div class="num">${data.stats.repos_mapped}</div><div class="lbl">Repos mapped</div></div>
+    <div class="stat"><div class="num">${data.stats.total_nodes}</div><div class="lbl">Total nodes</div></div>
+    <div class="stat"><div class="num">${data.stats.needs_review}</div><div class="lbl">Edges flagged for review</div></div>`;
+  document.getElementById("wsBody").innerHTML=data.workspaces.map(w=>`<tr><td>${w.name}</td><td>${w.repos}</td><td>${new Date(w.created*1000).toLocaleString()}</td></tr>`).join("") || "<tr><td colspan='3'>No workspaces yet.</td></tr>";
+  document.getElementById("repoBody").innerHTML=data.repos.map(r=>`<tr><td>${r.repo}</td><td>${r.workspace}</td><td>${r.nodes}</td><td>${r.needs_review}</td><td>${new Date(r.connected*1000).toLocaleString()}</td></tr>`).join("") || "<tr><td colspan='5'>No repos connected yet.</td></tr>";
+}
+
+loadProjects();
+</script>
+</body>
+</html>

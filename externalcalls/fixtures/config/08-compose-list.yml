@@ -1,0 +1,5 @@
+services:
+  app:
+    environment:
+      - COMPOSE_LIST=https://compose-list.example.com
+      - COMPOSE_BARE

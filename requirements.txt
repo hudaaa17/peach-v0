@@ -1,0 +1,6 @@
+tree-sitter
+PyYAML>=6.0
+tree-sitter-python
+protobuf
+tree-sitter-language-pack
+pytest

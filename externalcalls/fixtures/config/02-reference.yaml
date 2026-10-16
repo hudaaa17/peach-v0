@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: reference}
+spec:
+  template:
+    spec:
+      containers:
+        - name: app
+          image: example/app:latest
+          env:
+            - name: CM_URL
+              valueFrom:
+                configMapKeyRef: {name: urls, key: remote_endpoint}

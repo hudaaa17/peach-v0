@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata: {name: cron}
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: app
+              image: example/app:latest
+              env: [{name: CRON, value: "https://cron.example.com"}]
+          restartPolicy: Never

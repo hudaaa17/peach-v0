@@ -1,0 +1,9 @@
+Flask>=3.0
+transformers>=4.46
+torch>=2.2
+accelerate>=0.34
+tree-sitter-language-pack
+chromadb>=0.5.0
+sentence-transformers>=3.0.0
+einops>=0.7.0
+ollama>=0.3.0

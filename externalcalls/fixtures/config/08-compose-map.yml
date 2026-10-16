@@ -1,0 +1,4 @@
+services:
+  app:
+    environment:
+      COMPOSE_MAP: https://compose-map.example.com

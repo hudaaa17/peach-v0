@@ -1,0 +1,12 @@
+.git
+.gitignore
+venv/
+.venv/
+__pycache__/
+*.pyc
+claude-mem/
+taste-skill/
+evals/
+*.sh
+.dockerignore
+Dockerfile
